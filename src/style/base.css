@@ -1,0 +1,179 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--masthead-h) + 16px);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.55;
+  font-feature-settings: 'tnum' 0, 'ss01' 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* paper grain over everything, never intercepts clicks */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--grain);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  z-index: 9999;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-variation-settings: 'opsz' 96, 'SOFT' 40, 'WONK' 0;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--paper-hi);
+}
+
+/* focus = a stitched outline */
+:focus-visible {
+  outline: 2px dashed var(--signal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.mono {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  font-feature-settings: 'zero' 1;
+}
+
+.caps {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.muted {
+  color: var(--ink-3);
+}
+
+.stitch-rule {
+  height: 2px;
+  background: var(--stitch);
+  border: 0;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.dotted-rule {
+  height: 1px;
+  background: var(--stitch-ink);
+  border: 0;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Leaflet: tint the basemap so it sits on paper */
+.leaflet-container {
+  font-family: var(--f-body);
+  background: var(--paper-lo);
+}
+.leaflet-tile-pane {
+  filter: grayscale(1) sepia(0.28) contrast(0.92) brightness(1.04);
+}
+.leaflet-control-attribution {
+  font-family: var(--f-mono);
+  font-size: 9px !important;
+  background: rgba(250, 247, 240, 0.85) !important;
+}
+.leaflet-bar a {
+  background: var(--paper-hi) !important;
+  color: var(--ink) !important;
+  border-color: var(--rule) !important;
+}
+
+/* icons sitting inside running text */
+p > svg,
+.small > svg,
+.ticket-meta svg {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 4px;
+}

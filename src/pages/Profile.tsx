@@ -43,7 +43,7 @@ export default function Profile() {
         </div>
         <dl className="id-stats">
           <div><dt className="mono caps">Reports</dt><dd className="num">{reports.length}</dd></div>
-          <div><dt className="mono caps">Mended</dt><dd className="num">{mended}</dd></div>
+          <div><dt className="mono caps">Fixed</dt><dd className="num">{mended}</dd></div>
           <div><dt className="mono caps">Given</dt><dd className="num">{fmtMoney(given)}</dd></div>
           <div><dt className="mono caps">Backed</dt><dd className="num">{backed}</dd></div>
         </dl>

@@ -14,10 +14,8 @@ export default function Stories() {
   return (
     <div className="stories-page">
       <header className="page-head">
-        <div className="kicker mono caps">Success stories</div>
-        <h1>
-          Mended. <em>Reported by neighbours, paid for together.</em>
-        </h1>
+        <h1>Fixed</h1>
+        <p className="page-sub">Reported by neighbours, paid for together. Drag a photo to compare before and after.</p>
       </header>
       {isLoading && <Skeleton h={400} />}
       {stories?.length === 0 && <Empty title="No success stories yet">The first fix will land here.</Empty>}

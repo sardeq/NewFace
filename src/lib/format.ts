@@ -40,7 +40,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   contractor: 'Contractor',
 }
 
-export const ticketRef = (ref: number) => `MN-${String(ref).padStart(4, '0')}`
+export const ticketRef = (ref: number) => `MT-${String(ref).padStart(4, '0')}`
 
 const money = new Intl.NumberFormat('en-JO', { maximumFractionDigits: 0 })
 export const fmtMoney = (n: number, withCurrency = true) =>

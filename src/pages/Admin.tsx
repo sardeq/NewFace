@@ -61,10 +61,10 @@ export default function Admin() {
     <div className="desk">
       <header className="page-head desk-head">
         <div>
-          <div className="kicker mono caps">Municipal desk · {APP.city}</div>
-          <h1>
-            Today’s docket <em>— {groups.triage.length + pendingBids.length} need a decision.</em>
-          </h1>
+          <h1>Today’s docket</h1>
+          <p className="page-sub">
+            {APP.city} municipal desk · {groups.triage.length + pendingBids.length} items need a decision
+          </p>
         </div>
       </header>
 

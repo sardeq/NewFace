@@ -53,10 +53,8 @@ export default function Feed() {
     <div className="page-grid">
       <section className="col-main">
         <header className="page-head">
-          <div className="kicker mono caps">Public ledger · {APP.city}</div>
-          <h1>
-            What’s broken, <em>and who’s mending it.</em>
-          </h1>
+          <h1>What’s broken in {APP.city}</h1>
+          <p className="page-sub">Reported by neighbours, checked by the city, fixed together.</p>
         </header>
 
         <Composer />
@@ -128,7 +126,7 @@ function CityPulse() {
   const rows: Array<[string, string, string?]> = s
     ? [
         ['Reports filed', String(s.reported)],
-        ['Mended', String(s.resolved), 'moss'],
+        ['Fixed', String(s.resolved), 'moss'],
         ['Raised by neighbours', fmtMoney(s.raised), 'signal'],
         ['Open for funding', String(s.openForFunding)],
         ['Avg. days to fix', `${s.avgDaysToFix}`],
@@ -189,7 +187,7 @@ function RecentlyMended() {
   return (
     <section className="ledger-card mended-card">
       <header>
-        <span className="mono caps">Recently mended</span>
+        <span className="mono caps">Recently fixed</span>
         <Icon name="stitch" size={16} />
       </header>
       <Link to={`/stories/${s.id}`} className="mended-pair">

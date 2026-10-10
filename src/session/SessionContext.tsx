@@ -17,7 +17,7 @@ interface Session {
 }
 
 const Ctx = createContext<Session | null>(null)
-const PERSONA_KEY = 'mend.persona'
+const PERSONA_KEY = 'matab.persona'
 
 function readPersona(): string | null {
   try {

@@ -12,7 +12,7 @@ import { buildSeed, DB_VERSION, type MockDb } from './seed'
 import { distanceKm, fmtMoney, hotScore, pct, STATUS_META, ticketRef, txnRef, uid } from '../../lib/format'
 import { intakeOutcome } from '../../lib/ai'
 
-const KEY = 'mend.mockdb'
+const KEY = 'matab.mockdb'
 const latency = () => new Promise((r) => setTimeout(r, 120 + Math.random() * 180))
 const now = () => new Date().toISOString()
 const clone = <T,>(v: T): T => structuredClone(v)

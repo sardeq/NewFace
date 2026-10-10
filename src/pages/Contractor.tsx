@@ -37,12 +37,10 @@ export default function Contractor() {
   return (
     <div className="works">
       <header className="page-head">
-        <div className="kicker mono caps">
-          Contractor workspace · {user.company} {user.verified ? '· verified' : '· verification pending'}
-        </div>
-        <h1>
-          Jobs on the board. <em>Bid, get authorised, mend.</em>
-        </h1>
+        <h1>Open jobs</h1>
+        <p className="page-sub">
+          {user.company} · {user.verified ? 'Verified contractor' : 'Verification pending'}
+        </p>
       </header>
 
       <Segmented

@@ -142,7 +142,7 @@ function Detail({ issue }: { issue: Issue }) {
             <Link to={`/stories/${issue.storyId}`} className="story-banner">
               <Icon name="stitch" size={22} />
               <div>
-                <strong>Mended.</strong> See the before & after and what it cost.
+                <strong>Fixed.</strong> See the before & after and what it cost.
               </div>
               <Icon name="arrowRight" />
             </Link>

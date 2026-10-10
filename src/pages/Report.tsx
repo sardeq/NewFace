@@ -149,10 +149,8 @@ export default function Report() {
   return (
     <div className="report">
       <header className="page-head">
-        <div className="kicker mono caps">New report · form R-1</div>
-        <h1>
-          Log a broken thing. <em>Takes a minute.</em>
-        </h1>
+        <h1>Report damage</h1>
+        <p className="page-sub">A photo, a pin on the map and a short description. Takes about a minute.</p>
       </header>
 
       <ol className="steps" aria-label="Progress">
@@ -351,7 +349,7 @@ function PreviewTicket({
       </div>
       <div className="ticket-body">
         <header className="ticket-meta mono">
-          <span className="ticket-ref">MN-····</span>
+          <span className="ticket-ref">MT-····</span>
           <span className="sep">/</span>
           <span className="caps">{ai ? CATEGORY_META[ai.category].code : '··'}</span>
           <span className="sep">/</span>

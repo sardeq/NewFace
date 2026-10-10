@@ -337,7 +337,7 @@ export function buildSeed(): MockDb {
   })
 
   const bids: Bid[] = [
-    bid('b_rb1', 'i_rainbow', 'u_nabulsi', 610, 2, 'Saw-cut the failed area 1.2×1.2m, compact new base course, hot-mix asphalt patch and seal edges. Night work 11pm–5am with cones and a flagman, street reopened by morning.', 'pending', 10, 84, 'accept', ['Price 6% under estimate.', 'Clear method statement with traffic management.', '14 jobs completed on Mend.']),
+    bid('b_rb1', 'i_rainbow', 'u_nabulsi', 610, 2, 'Saw-cut the failed area 1.2×1.2m, compact new base course, hot-mix asphalt patch and seal edges. Night work 11pm–5am with cones and a flagman, street reopened by morning.', 'pending', 10, 84, 'accept', ['Price 6% under estimate.', 'Clear method statement with traffic management.', '14 jobs completed on Matab.']),
     bid('b_rb2', 'i_rainbow', 'u_quick', 980, 1, 'We fix fast. Cold patch same day.', 'pending', 6, 41, 'review', ['Price 51% above estimate.', 'Cold patch is a temporary fix on a busy road.', 'Contractor not yet verified.']),
     bid('b_sl1', 'i_stairs_light', 'u_sahel', 870, 5, 'Replace 11 failed LED fixtures and the corroded junction box at the top landing; test circuit and add a photocell timer.', 'approved', 60, 88, 'accept', ['In line with estimate.', 'Electrical specialist, verified.']),
     bid('b_pp1', 'i_pipe', 'u_nabulsi', 1750, 3, 'Emergency excavation, replace 2m of main with ductile iron, backfill and reinstate the sidewalk with matching tiles.', 'approved', 40, 86, 'accept', ['Slightly under estimate.', 'Realistic timeline for severity 5.']),
@@ -367,7 +367,7 @@ export function buildSeed(): MockDb {
   })
 
   const notifications: AppNotification[] = [
-    { id: 'n1', userId: 'u_lina', kind: 'status', title: 'Your report is open for funding', body: 'MN-0117 · Deep pothole on Rainbow Street — official estimate JOD 650.', link: '/issue/i_rainbow', read: false, at: ago(20) },
+    { id: 'n1', userId: 'u_lina', kind: 'status', title: 'Your report is open for funding', body: 'MT-0117 · Deep pothole on Rainbow Street — official estimate JOD 650.', link: '/issue/i_rainbow', read: false, at: ago(20) },
     { id: 'n2', userId: 'u_lina', kind: 'comment', title: 'Municipal desk replied', body: '“Verified by our roads team on site…”', link: '/issue/i_rainbow', read: false, at: ago(18) },
     { id: 'n3', userId: 'u_lina', kind: 'story', title: 'Fixed: hydrant in Sweifieh', body: 'A report you filed became a success story.', link: '/stories', read: true, at: ago(24 * 34) },
     { id: 'n4', userId: 'u_nabulsi', kind: 'bid_approved', title: 'Work authorised · Burst main, Shmeisani', body: 'Your bid of JOD 1,750 was approved. Authorisation WA-PP1-2640.', link: '/contractor', read: false, at: ago(36) },

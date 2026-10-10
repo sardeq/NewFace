@@ -23,17 +23,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* paper grain over everything, never intercepts clicks */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--grain);
-  opacity: 0.32;
-  mix-blend-mode: multiply;
-  z-index: 9999;
-}
 
 img,
 svg,
@@ -69,10 +58,9 @@ h2,
 h3,
 h4 {
   font-family: var(--f-display);
-  font-weight: 600;
-  font-variation-settings: 'opsz' 96, 'SOFT' 40, 'WONK' 0;
-  letter-spacing: -0.015em;
-  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   margin: 0;
   text-wrap: balance;
 }
@@ -84,26 +72,26 @@ p {
 
 ::selection {
   background: var(--signal);
-  color: var(--paper-hi);
+  color: var(--ink);
 }
 
-/* focus = a stitched outline */
 :focus-visible {
-  outline: 2px dashed var(--signal);
-  outline-offset: 3px;
-  border-radius: 2px;
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
+/* small meta text: refs, dates, field labels */
 .mono {
-  font-family: var(--f-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
-  font-feature-settings: 'zero' 1;
+  font-family: var(--f-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
+/* historically "small caps" labels — now plain sentence case */
 .caps {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-weight: 600;
 }
 
 .num {
@@ -127,16 +115,15 @@ p {
 }
 
 .stitch-rule {
-  height: 2px;
-  background: var(--stitch);
+  height: 1px;
   border: 0;
+  background: var(--rule);
   margin: 0;
-  opacity: 0.85;
 }
 
 .dotted-rule {
   height: 1px;
-  background: var(--stitch-ink);
+  background: var(--rule);
   border: 0;
   margin: 0;
 }
@@ -156,12 +143,11 @@ p {
   background: var(--paper-lo);
 }
 .leaflet-tile-pane {
-  filter: grayscale(1) sepia(0.28) contrast(0.92) brightness(1.04);
+  filter: saturate(0.55) hue-rotate(-8deg) brightness(1.02);
 }
 .leaflet-control-attribution {
-  font-family: var(--f-mono);
-  font-size: 9px !important;
-  background: rgba(250, 247, 240, 0.85) !important;
+  font-size: 10px !important;
+  background: rgba(241, 246, 250, 0.85) !important;
 }
 .leaflet-bar a {
   background: var(--paper-hi) !important;

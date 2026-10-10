@@ -6,12 +6,12 @@ import { useId, type ReactNode } from 'react'
 
 export type SketchKind = 'pothole' | 'lamp' | 'pipe' | 'slabs' | 'sign' | 'drain' | 'swing'
 
-const INK = '#1d1b17'
-const PAPER = '#ece4d4'
-const SIGNAL = '#e2531f'
-const MOSS = '#3d6a4c'
-const SKY = '#2d5a78'
-const OCHRE = '#d9a640'
+const INK = '#1c2b4a'
+const PAPER = '#dbe6ef'
+const SIGNAL = '#c2255c'
+const MOSS = '#3f9a52'
+const SKY = '#2f6fb0'
+const OCHRE = '#f2c230'
 
 const BY_CATEGORY: Record<string, SketchKind> = {
   roads: 'pothole',
@@ -70,7 +70,7 @@ export function Sketch({ kind, fixed = false, className }: { kind: SketchKind; f
 const cone = (x: number, y: number) => (
   <g transform={`translate(${x} ${y})`}>
     <path d="M-14 0h28l-9-40h-10Z" fill={SIGNAL} />
-    <path d="M-10.5 -16h21M-8 -27h16" stroke="#faf7f0" strokeWidth="3.5" />
+    <path d="M-10.5 -16h21M-8 -27h16" stroke="#f1f6fa" strokeWidth="3.5" />
     <path d="M-20 0h40" strokeWidth="3" />
   </g>
 )
@@ -80,9 +80,9 @@ const stitchMark = (d: string) => <path d={d} stroke={MOSS} strokeWidth="2.4" st
 const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
   pothole: (fixed, id) => (
     <>
-      <path d="M0 300 158 92h84l158 208" fill="#d9cfbd" />
+      <path d="M0 300 158 92h84l158 208" fill="#c9d6e2" />
       <path d="M0 92h400" strokeOpacity=".4" />
-      <path d="M200 100v18M200 134v24M200 180v32M200 236v50" stroke="#faf7f0" strokeWidth="5" />
+      <path d="M200 100v18M200 134v24M200 180v32M200 236v50" stroke="#f1f6fa" strokeWidth="5" />
       <path d="M60 300 170 112M340 300 230 112" strokeOpacity=".35" strokeDasharray="3 7" />
       {fixed ? (
         <>
@@ -92,7 +92,7 @@ const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
         </>
       ) : (
         <>
-          <path d="M120 206c6-18 40-26 78-26 44 0 70 10 74 24 3 13-22 26-70 28-48 2-86-8-82-26Z" fill="#3b3428" />
+          <path d="M120 206c6-18 40-26 78-26 44 0 70 10 74 24 3 13-22 26-70 28-48 2-86-8-82-26Z" fill="#2a3954" />
           <path d="M138 206c10-10 34-14 62-14 30 0 52 6 54 14 2 8-22 15-56 15s-64-6-60-15Z" fill={SKY} fillOpacity=".55" stroke="none" />
           <path d="M118 208 92 214M270 202l30-6M168 232l-12 22M236 230l14 18M200 180l4-16" strokeWidth="1.6" />
           <path d="M92 214l-14 4M300 196l12 2" strokeWidth="1.2" />
@@ -124,7 +124,7 @@ const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
           <circle cx="120" cy="60" r="2" fill={INK} />
           <circle cx="60" cy="110" r="1.6" fill={INK} />
           <circle cx="170" cy="30" r="1.6" fill={INK} />
-          <path d="M70 40a16 16 0 1 0 14 22 13 13 0 1 1-14-22Z" fill="#faf7f0" />
+          <path d="M70 40a16 16 0 1 0 14 22 13 13 0 1 1-14-22Z" fill="#f1f6fa" />
         </>
       )}
     </>
@@ -171,9 +171,9 @@ const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
         </>
       ) : (
         <>
-          <path d="M150 210l92-30 6 30-96 30Z" fill="#cdbfa6" />
+          <path d="M150 210l92-30 6 30-96 30Z" fill="#b9c8d6" />
           <path d="M152 240l-2 30h96l-4-60" fill={`url(#n${id})`} stroke="none" />
-          <path d="M242 160l92-24 18 34-104 14Z" fill="#d7cab3" />
+          <path d="M242 160l92-24 18 34-104 14Z" fill="#c6d4e0" />
           <path d="M290 150c10 14 30 20 50 18M260 176c14 6 30 4 40-4" stroke={MOSS} strokeWidth="2.4" />
           <path d="M64 230l20 10 6-14 14 8" strokeWidth="1.6" />
           <path d="M120 284c6-10 12-12 20-8" stroke={SIGNAL} strokeWidth="2.6" />
@@ -195,8 +195,8 @@ const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
             <path d="M0 160V64" strokeWidth="5" />
             <path d="M-12 160h24" strokeWidth="5" />
             <path d={oct} transform="scale(.9)" fill={SIGNAL} />
-            <path d={oct} transform="scale(.76)" stroke="#faf7f0" strokeWidth="3" />
-            <text x="0" y="9" textAnchor="middle" fill="#faf7f0" stroke="none" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="26">STOP</text>
+            <path d={oct} transform="scale(.76)" stroke="#f1f6fa" strokeWidth="3" />
+            <text x="0" y="9" textAnchor="middle" fill="#f1f6fa" stroke="none" fontFamily="Public Sans, sans-serif" fontWeight="700" fontSize="26">STOP</text>
             {stitchMark('M-54 166h108')}
           </g>
         ) : (
@@ -205,7 +205,7 @@ const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
             <path d="M108 236h24" strokeWidth="5" />
             <g transform="translate(270 200) rotate(-62) scale(.62 .9)">
               <path d={oct} fill={SIGNAL} />
-              <path d={oct} transform="scale(.85)" stroke="#faf7f0" strokeWidth="3" />
+              <path d={oct} transform="scale(.85)" stroke="#f1f6fa" strokeWidth="3" />
             </g>
             <path d="M80 250c10-14 20-18 30-10s20 4 26-6M300 246c10-10 22-8 30 0" stroke={MOSS} strokeWidth="2.4" />
             <path d="M40 120h60M60 104l40 16-40 16" strokeOpacity=".5" />
@@ -220,19 +220,19 @@ const DRAW: Record<SketchKind, (fixed: boolean, id: string) => ReactNode> = {
       <path d="M0 110h400" />
       <path d="M0 110 40 150h360" strokeOpacity=".7" />
       <path d="M40 150v150" strokeOpacity=".5" />
-      <rect x="130" y="170" width="160" height="80" rx="4" fill="#3b3428" />
+      <rect x="130" y="170" width="160" height="80" rx="4" fill="#2a3954" />
       {fixed ? (
         <>
-          <path d="M150 170v80M170 170v80M190 170v80M210 170v80M230 170v80M250 170v80M270 170v80" stroke="#cdbfa6" strokeWidth="5" />
+          <path d="M150 170v80M170 170v80M190 170v80M210 170v80M230 170v80M250 170v80M270 170v80" stroke="#b9c8d6" strokeWidth="5" />
           <rect x="130" y="170" width="160" height="80" rx="4" />
           {stitchMark('M118 160h184v100H118Z')}
         </>
       ) : (
         <>
-          <path d="M150 170v80M190 170v80M230 170v80M270 170v80" stroke="#cdbfa6" strokeWidth="5" />
-          <path d="M136 214c10-20 30-26 46-14 12-14 34-10 40 4 16-10 40-4 46 12 10 0 20 12 18 34H134c-6-12-4-26 2-36Z" fill="#a39477" />
+          <path d="M150 170v80M190 170v80M230 170v80M270 170v80" stroke="#b9c8d6" strokeWidth="5" />
+          <path d="M136 214c10-20 30-26 46-14 12-14 34-10 40 4 16-10 40-4 46 12 10 0 20 12 18 34H134c-6-12-4-26 2-36Z" fill="#8d9cb2" />
           <path d="M150 212l10 8M200 206l-6 10M244 214l8 6M176 236h10" strokeWidth="2.6" />
-          <path d="M210 196l44-16 6 12-44 16Z" fill="#faf7f0" />
+          <path d="M210 196l44-16 6 12-44 16Z" fill="#f1f6fa" />
           <path d="M254 180l10-4 4 10-8 4" fill={SIGNAL} />
           <path d="M60 262c40-14 100-12 140 0s100 18 170 4" stroke={SKY} strokeWidth="2.2" />
           <path d="M40 286c60-10 140-6 220 2s120 2 140-4" stroke={SKY} strokeWidth="1.6" strokeDasharray="2 8" />

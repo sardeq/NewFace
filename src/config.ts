@@ -1,7 +1,9 @@
 // Central app configuration. Rename the product in one place.
 export const APP = {
-  name: 'Mend',
-  tagline: 'The civic ledger for broken things',
+  name: 'Matab',
+  /** مطب — Arabic for "speed bump" */
+  nameAr: 'مطب',
+  tagline: 'Report it. Back it. Get it fixed.',
   city: 'Amman',
   currency: 'JOD',
   // Fallback map centre when GPS is unavailable (Amman, Third Circle)

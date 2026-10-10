@@ -1,4 +1,6 @@
-# Mend — the civic ledger for broken things
+# Matab (مطب) — report it, back it, get it fixed
+
+*Matab* is Arabic for “speed bump”.
 
 Citizens photograph damaged public infrastructure, the city prices the repair, neighbours
 crowdfund it, contractors bid to fix it, and every fix is published as a before/after story.
@@ -65,10 +67,10 @@ supabase/
 
 ## Design language
 
-“Civic field notebook”: paper, ink and one traffic-cone orange. Reports are perforated **tickets**,
-statuses are **rubber stamps**, funding is a **tape measure**, work authorisations are **permits**,
-donations print a **receipt**, and the recurring motif is the **stitch** — dashed seams that mend things.
-Fonts: Fraunces (display), Public Sans (body — the US government’s civic typeface), JetBrains Mono (data).
+“Road paint”: a pale sky-blue page, deep navy ink, speed-bump yellow for the main actions, with teal,
+raspberry and green as status colours. Layout is plain cards and simple tabs — the newspaper feel comes from
+the headline serif, not from decoration.
+Fonts: Source Serif 4 (headlines), Public Sans (everything else — the US government’s civic typeface).
 
 ## Next
 

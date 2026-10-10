@@ -98,7 +98,7 @@ export function LocationPicker({ point, onChange }: { point: GeoPoint; onChange:
         <Circle
           center={[point.lat, point.lng]}
           radius={point.accuracy}
-          pathOptions={{ color: '#e2531f', weight: 1.5, dashArray: '6 6', fillOpacity: 0.08 }}
+          pathOptions={{ color: '#1f8a7a', weight: 1.5, dashArray: '6 6', fillOpacity: 0.08 }}
         />
       ) : null}
       <Marker

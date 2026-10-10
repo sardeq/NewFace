@@ -1,6 +1,6 @@
-import type { SVGProps } from 'react'
+import { useId, type SVGProps } from 'react'
 
-/** Hand-tuned 24px stroke icons (no icon library — keeps the notebook look consistent). */
+/** Hand-tuned 24px stroke icons (no icon library — keeps the look consistent). */
 const P: Record<string, string> = {
   feed: 'M4 5.5h16M4 12h16M4 18.5h10',
   map: 'M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4Zm0 0v14m6-12v14',
@@ -74,17 +74,20 @@ export function Icon({
   )
 }
 
-/** The Mend mark: a crack, stitched shut. */
+const BUMP = 'M3 23.5c5 0 6-13 13-13s8 13 13 13Z'
+
+/** The Matab mark (مطب = speed bump): a striped bump sitting on the road line. */
 export function Logo({ size = 30 }: { size?: number }) {
+  const clip = `bump${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="4" fill="var(--ink)" />
-      <path d="M6 9.5 12 15l-3 3 7 5 3-4 7 3.5" fill="none" stroke="var(--paper-hi)" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-      <g stroke="var(--signal)" strokeWidth="2.2" strokeLinecap="round">
-        <path d="M8.5 15.5 11 11" />
-        <path d="M11.5 21.5 14.5 17.5" />
-        <path d="M18.5 23 21 19" />
-      </g>
+      <rect width="32" height="32" rx="8" fill="var(--ink)" />
+      <clipPath id={clip}>
+        <path d={BUMP} />
+      </clipPath>
+      <path d={BUMP} fill="var(--signal)" />
+      <path d="M7.5 27 12.5 9M14.5 27l5-18M21.5 27l5-18" stroke="var(--ink)" strokeWidth="2.8" clipPath={`url(#${clip})`} />
+      <path d="M3 23.5h26" stroke="var(--signal)" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )
 }

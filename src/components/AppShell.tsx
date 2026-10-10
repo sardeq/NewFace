@@ -23,7 +23,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/', label: 'Ledger', icon: 'feed', end: true },
   { to: '/map', label: 'Map', icon: 'map' },
-  { to: '/stories', label: 'Mended', icon: 'stitch' },
+  { to: '/stories', label: 'Fixed', icon: 'stitch' },
   { to: '/admin', label: 'Desk', icon: 'shield', roles: ['admin'] },
   { to: '/contractor', label: 'Jobs', icon: 'hardhat', roles: ['contractor'] },
   { to: '/me', label: 'You', icon: 'user' },
@@ -31,7 +31,7 @@ const NAV: NavItem[] = [
 
 const editionLine = () => {
   const d = new Date()
-  const day = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
+  const day = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
   return `${day} · ${APP.city}`
 }
 
@@ -108,10 +108,10 @@ function Masthead() {
       <Link to="/" className="brand" aria-label={`${APP.name} home`}>
         <Logo size={30} />
         <span className="brand-word">{APP.name}</span>
+        <span className="brand-ar" lang="ar" dir="rtl">{APP.nameAr}</span>
       </Link>
-      <div className="edition mono caps">
+      <div className="edition">
         <span>{editionLine()}</span>
-        <span className="edition-tag">{APP.tagline}</span>
       </div>
       <div className="mast-actions">
         <Link to="/report" className="btn btn-primary btn-sm mast-report">

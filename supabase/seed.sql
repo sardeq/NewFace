@@ -125,10 +125,10 @@ insert into seed_issue values
    'accept', 0.91, 'Raised slabs at a school entrance are a trip hazard for children.', 1500, 3200, null, 3, 0),
 
   ('b1000000-0000-4000-8000-000000000005', 5, 'a1000000-0000-4000-8000-000000000003', 384, 'resolved',
-   'Stop sign knocked flat at a blind junction',
-   'Someone hit the stop sign at the Khalda junction and it is lying in the bushes. Drivers coming downhill do not stop anymore.',
-   'signage', 5, 31.9928, 35.8451, 'Al-Ameer Hashem St junction', 'Khalda', 'stop-sign', 320, 320, 'ai', null,
-   'accept', 0.95, 'A missing stop sign at a blind junction is a serious collision risk.', 150, 450, null, 4, 0),
+   'Asphalt broken up along the kerb lane in Khalda',
+   'A long strip of the road surface has broken away next to the parked cars on Al-Ameer Hashem St. When it rains it turns into one long puddle and you cannot tell how deep it is, so drivers swerve into the next lane.',
+   'roads', 4, 31.9928, 35.8451, 'Al-Ameer Hashem St', 'Khalda', 'khalda-road', 520, 520, 'ai', null,
+   'accept', 0.95, 'A long strip of failed asphalt is holding water along a busy street.', 300, 800, null, 4, 0),
 
   ('b1000000-0000-4000-8000-000000000006', 6, 'a1000000-0000-4000-8000-000000000005', 5, 'pending_review',
    'Storm drain packed with rubble near the Roman Theatre',
@@ -143,10 +143,10 @@ insert into seed_issue values
    'accept', 0.86, 'A broken swing chain in a public playground is a minor injury risk.', 200, 600, null, 2, 0),
 
   ('b1000000-0000-4000-8000-000000000008', 8, 'a1000000-0000-4000-8000-000000000002', 648, 'resolved',
-   'Open manhole with no cover on a Marka side street',
-   'The manhole cover is gone completely. Someone put a plastic chair in it as a warning. A kid could fall in.',
-   'drainage', 5, 31.9751, 35.9852, 'Side street off Army St', 'Marka', 'marka-manhole', 260, 260, 'ai', null,
-   'accept', 0.96, 'An uncovered manhole on a residential street is a fall hazard.', 150, 400, null, 7, 0),
+   'Pothole in the middle of a Marka side street',
+   'A pothole has opened right in the middle of the lane off Army St. The broken asphalt keeps spreading and cars brake hard when they see it at the last second.',
+   'roads', 3, 31.9751, 35.9852, 'Side street off Army St', 'Marka', 'marka-pothole', 180, 180, 'ai', null,
+   'accept', 0.96, 'A spreading pothole in the middle of a residential lane.', 100, 300, null, 7, 0),
 
   ('b1000000-0000-4000-8000-000000000009', 9, 'a1000000-0000-4000-8000-000000000001', 3, 'pending_review',
    'Crumbling public steps behind Paris Square',
@@ -168,10 +168,10 @@ insert into seed_issue values
    'accept', 0.87, 'Several potholes along a bus lane are damaging the road edge.', 800, 3000, null, 1, 0),
 
   ('b1000000-0000-4000-8000-000000000012', 12, 'a1000000-0000-4000-8000-000000000001', 960, 'resolved',
-   'Fire hydrant leaking day and night in Sweifieh',
-   'The hydrant on the corner has a constant leak from the side valve. There is a permanent puddle and green algae on the pavement.',
-   'water', 3, 31.9561, 35.8622, 'Wakalat St corner', 'Sweifieh', 'sweifieh-hydrant', 450, 450, 'ai', null,
-   'accept', 0.90, 'A leaking hydrant valve is wasting water continuously.', 250, 700, null, 2, 0),
+   'Pothole full of smashed reflector pieces in Sweifieh',
+   'Someone threw broken red reflectors into the pothole on the corner to warn drivers, but it keeps growing and holds water after every rain.',
+   'roads', 3, 31.9561, 35.8622, 'Wakalat St corner', 'Sweifieh', 'sweifieh-pothole', 450, 450, 'ai', null,
+   'accept', 0.90, 'A growing pothole filled with debris on a busy corner.', 250, 700, null, 2, 0),
 
   ('b1000000-0000-4000-8000-000000000013', 13, 'a1000000-0000-4000-8000-000000000005', 14, 'rejected',
    'Cheap tyres 50% off this week only',
@@ -190,11 +190,11 @@ insert into seed_timeline values
   ('b1000000-0000-4000-8000-000000000002', 72,  46,   null, null),  -- Kalha stairs lights
   ('b1000000-0000-4000-8000-000000000003', 44,  30,   18,   null),  -- burst main
   ('b1000000-0000-4000-8000-000000000004', 12,  null, null, null),  -- school sidewalk
-  ('b1000000-0000-4000-8000-000000000005', 360, 300,  200,  168),   -- stop sign
+  ('b1000000-0000-4000-8000-000000000005', 360, 300,  200,  168),   -- Khalda road strip
   ('b1000000-0000-4000-8000-000000000007', 48,  null, null, null),  -- swing
-  ('b1000000-0000-4000-8000-000000000008', 636, 620,  600,  576),   -- manhole
+  ('b1000000-0000-4000-8000-000000000008', 636, 620,  600,  576),   -- Marka pothole
   ('b1000000-0000-4000-8000-000000000010', 100, null, null, null),  -- flickering lamp
-  ('b1000000-0000-4000-8000-000000000012', 920, 880,  850,  816);   -- hydrant
+  ('b1000000-0000-4000-8000-000000000012', 920, 880,  850,  816);   -- Sweifieh pothole
 
 -- Oldest first, so ticket refs (MT-0100, …) follow the order reports came in.
 insert into public.issues (
@@ -247,11 +247,11 @@ insert into seed_bid values
   ('c1000000-0000-4000-8000-000000000006', 'b1000000-0000-4000-8000-000000000007', 'a1000000-0000-4000-8000-000000000009', 350, 2,
    'Replace both swing chains and seats with galvanised chain, sand and repaint frame.',
    'pending', 30, 63, 'review', array['Price fits estimate.', 'Contractor not yet verified.']),
-  ('c1000000-0000-4000-8000-000000000007', 'b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000008', 300, 1,
-   'Reinstall sign on a new break-away post, add reflective sheeting.',
+  ('c1000000-0000-4000-8000-000000000007', 'b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000007', 490, 2,
+   'Saw-cut the failed strip, re-compact the base course and lay a hot-mix asphalt overlay across the full width of the lane.',
    'approved', 330, 80, 'accept', array['Within estimate.']),
-  ('c1000000-0000-4000-8000-000000000008', 'b1000000-0000-4000-8000-000000000008', 'a1000000-0000-4000-8000-000000000007', 250, 1,
-   'Supply and fit ductile-iron cover and frame, re-bed with rapid-set mortar.',
+  ('c1000000-0000-4000-8000-000000000008', 'b1000000-0000-4000-8000-000000000008', 'a1000000-0000-4000-8000-000000000007', 170, 1,
+   'Cut the pothole square, clean and tack-coat the edges, fill with hot-mix asphalt and roll flat.',
    'approved', 630, 90, 'accept', array['Within estimate.', 'Urgent safety job, 1-day turnaround.']);
 
 insert into public.bids (id, issue_id, contractor_id, amount, days, message, status, ai, decided_at, decision_note, "authorization", created_at)
@@ -273,14 +273,14 @@ where b.issue = i.id and b.status = 'approved';
 
 -- ───────── 4. success stories ─────────
 insert into public.stories (id, issue_id, after_photos, summary, final_cost, days_to_fix, contractor_id, created_at) values
-  ('d1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000005', array[(select base from seed_photo) || 'stop-sign-fixed'],
-   'New reflective stop sign on a break-away post, plus a rumble strip on the downhill approach. Reported, funded and fixed in 9 days.',
-   300, 9, 'a1000000-0000-4000-8000-000000000008', now() - interval '7 days'),
-  ('d1000000-0000-4000-8000-000000000002', 'b1000000-0000-4000-8000-000000000008', array[(select base from seed_photo) || 'marka-manhole-fixed'],
-   'Ductile-iron cover fitted and locked. The plastic chair has been retired with honours.',
-   250, 3, 'a1000000-0000-4000-8000-000000000007', now() - interval '24 days'),
-  ('d1000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-000000000012', array[(select base from seed_photo) || 'sweifieh-hydrant-fixed'],
-   'Valve gasket replaced by the municipal water crew; the algae patch was pressure-washed.',
+  ('d1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000005', array[(select base from seed_photo) || 'khalda-road-fixed'],
+   'The broken strip was cut out, the base re-compacted and the whole lane resurfaced with fresh asphalt. Reported, funded and fixed in 9 days.',
+   490, 9, 'a1000000-0000-4000-8000-000000000007', now() - interval '7 days'),
+  ('d1000000-0000-4000-8000-000000000002', 'b1000000-0000-4000-8000-000000000008', array[(select base from seed_photo) || 'marka-pothole-fixed'],
+   'Cut square, filled with hot-mix and rolled flat in a single morning. Smooth again.',
+   170, 3, 'a1000000-0000-4000-8000-000000000007', now() - interval '24 days'),
+  ('d1000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-000000000012', array[(select base from seed_photo) || 'sweifieh-pothole-fixed'],
+   'The municipal roads crew cleared out the debris, filled the hole with hot-mix and compacted it.',
    410, 6, null, now() - interval '34 days');
 
 update public.issues i set story_id = s.id
@@ -358,7 +358,7 @@ from (values
   (11.5,        'b1000000-0000-4000-8000-000000000004', 'a1000000-0000-4000-8000-000000000006', 'Estimate includes root barrier so this does not happen again.'),
   (40,          'b1000000-0000-4000-8000-000000000007', 'a1000000-0000-4000-8000-000000000001', 'Taking my kids here on weekends, happy to help.'),
   (3,           'b1000000-0000-4000-8000-000000000006', 'a1000000-0000-4000-8000-000000000002', 'Shops on that corner lost stock last winter because of this.'),
-  (167,         'b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006', 'Replaced with a reflective sign and a new rumble strip. Thanks Rana for reporting.')
+  (167,         'b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006', 'Resurfaced the whole strip, not just patched. Thanks Rana for reporting.')
 ) as c(h, issue, author, body);
 
 -- ───────── 8. donations ─────────

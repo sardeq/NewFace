@@ -209,12 +209,32 @@ export function Skeleton({ h = 120 }: { h?: number }) {
   return <div className="skeleton" style={{ height: h }} />
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
+export function Field({
+  label,
+  hint,
+  error,
+  errorId,
+  children,
+}: {
+  label: string
+  hint?: ReactNode
+  /** Validation message shown under the control (replaces the hint while present). */
+  error?: string
+  /** Give the input `aria-describedby={errorId}` so screen readers announce the error. */
+  errorId?: string
+  children: ReactNode
+}) {
   return (
-    <label className="field">
+    <label className={`field ${error ? 'has-error' : ''}`}>
       <span className="field-label mono caps">{label}</span>
       {children}
-      {hint && <span className="field-hint">{hint}</span>}
+      {error ? (
+        <span className="field-error" id={errorId} role="alert">
+          {error}
+        </span>
+      ) : (
+        hint && <span className="field-hint">{hint}</span>
+      )}
     </label>
   )
 }
@@ -235,6 +255,7 @@ export function Segmented<T extends string>({
       {options.map((o) => (
         <button
           key={o.value}
+          type="button"
           role="tab"
           aria-selected={value === o.value}
           className={value === o.value ? 'on' : ''}

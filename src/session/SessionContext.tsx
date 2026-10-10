@@ -24,17 +24,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const adopt = useCallback(
     async (id: string | null) => {
       api.setViewer(id)
-      const p = id ? await api.getProfile(id) : null
-      setUser(p)
-      setLoading(false)
-      qc.invalidateQueries()
+      let p: Profile | null = null
+      try {
+        p = id ? await api.getProfile(id) : null
+        if (id && !p) console.warn('[session] signed in, but no profiles row for', id, '— is the on_auth_user_created trigger installed?')
+      } catch (e) {
+        console.error('[session] could not load profile', e)
+      } finally {
+        setUser(p)
+        setLoading(false)
+        qc.invalidateQueries()
+      }
     },
     [qc],
   )
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => adopt(data.session?.user.id ?? null))
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => void adopt(s?.user.id ?? null))
+    // Supabase runs this callback while holding its auth lock; calling another Supabase method
+    // inside it (getProfile does) can deadlock sign-in. Defer to the next tick, as their docs advise.
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      const id = s?.user.id ?? null
+      setTimeout(() => void adopt(id), 0)
+    })
     return () => sub.subscription.unsubscribe()
   }, [adopt])
 

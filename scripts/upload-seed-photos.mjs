@@ -19,21 +19,14 @@ const PASSWORD = process.env.SEED_PASSWORD ?? 'MatabDemo#2026'
 // Must match the photo names in supabase/seed.sql.
 const NAMES = [
   'rainbow-pothole', 'kalha-stairs-lights', 'burst-main', 'school-sidewalk', 'khalda-road',
-  'roman-theatre-drain', 'jubeiha-swing', 'marka-pothole', 'paris-square-steps', 'abdoun-lamp',
+  'downtown-bins', 'jubeiha-swing', 'marka-pothole', 'paris-square-road', 'abdoun-sign',
   'abu-nseir-potholes', 'sweifieh-pothole', 'spam-tyres',
   'khalda-road-fixed', 'marka-pothole-fixed', 'sweifieh-pothole-fixed',
 ]
 
-// Use your own file names: <your file name, without extension> → <seed photo name>.
+// Your own file names → seed photo names live in supabase/seed-photos/map.json (shared with fetch-seed-photos.mjs).
 // Files already named after a seed photo (e.g. burst-main.jpg) don't need an entry.
-const RENAME = {
-  pot1: 'khalda-road',
-  pot2: 'khalda-road-fixed',
-  b1: 'marka-pothole',
-  b2: 'marka-pothole-fixed',
-  c1: 'sweifieh-pothole',
-  c2: 'sweifieh-pothole-fixed',
-}
+const RENAME = JSON.parse(readFileSync(join(DIR, 'map.json'), 'utf8'))
 const REPLACE = process.argv.includes('--replace')
 const TYPES = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' }
 

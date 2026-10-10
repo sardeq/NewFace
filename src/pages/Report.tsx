@@ -278,7 +278,7 @@ export default function Report() {
                     a={ai}
                     outcome={
                       outcome === 'published'
-                        ? 'Looks genuine — this will go live on the public ledger immediately and wait for an official cost estimate.'
+                        ? 'Looks genuine — this will go live immediately and open for funding at Gemma’s cost estimate.'
                         : outcome === 'queued'
                           ? 'Not sure enough to auto-publish — a municipal reviewer will look at it, usually within a day.'
                           : 'This probably isn’t something the city can fix. You can still file it; it will be closed with this reason and you can appeal.'
@@ -386,6 +386,7 @@ function PreviewTicket({
 
 function Filed({ issue, onAnother }: { issue: Issue; onAnother: () => void }) {
   const live = issue.verifiedBy === 'ai'
+  const funding = issue.status === 'open_for_funding'
   const rejected = issue.status === 'rejected'
   return (
     <div className="filed">
@@ -397,7 +398,9 @@ function Filed({ issue, onAnother }: { issue: Issue; onAnother: () => void }) {
       <p className="muted">
         {rejected
           ? `Gemma closed this report: ${issue.rejectionReason ?? 'not actionable'}. If you think that’s wrong, comment on it to appeal.`
-          : live
+          : live && funding
+            ? `Verified automatically and open for funding — goal ${issue.estimatedCost ?? ''} ${APP.currency}. Share it so neighbours can chip in.`
+            : live
             ? 'Verified automatically and now live on the public ledger. You’ll get a dispatch when the city attaches a cost and opens funding.'
             : 'Waiting for a municipal reviewer. You’ll get a dispatch as soon as it’s verified.'}
       </p>

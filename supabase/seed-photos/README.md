@@ -9,31 +9,31 @@ node scripts/upload-seed-photos.mjs
 
 A file is used for a report when either
 
-- it's named after the report's photo name below (`burst-main.jpg`; `Burst Main.JPG` and `burst_main.png` also match), or
-- it's listed in the `RENAME` map at the top of `scripts/upload-seed-photos.mjs` (that's how `pot1.jpg`, `b1.jpg`, … are matched).
+- it's listed in **`map.json`** (your file name without extension → photo name), e.g. `"jordan": "rainbow-pothole"`, or
+- it's named after the photo name itself (`burst-main.jpg`; `Burst Main.JPG` and `burst_main.png` also match).
 
-Editing this table does **not** change anything — it's documentation only.
+To use a new photo: drop it here, add a line to `map.json`, run the upload script. Editing this README changes nothing.
 
 Landscape shots around 1600px wide work best (cards crop to 16:10).
 
-**Replacing photos that are already uploaded:** change the files, run `supabase/migrations/0003_media_replace.sql`
-once, then `node scripts/upload-seed-photos.mjs --replace` and hard-refresh the app.
+**Replacing a photo that's already uploaded:** run `supabase/migrations/0003_media_replace.sql` once, then
+`node scripts/upload-seed-photos.mjs --replace` and hard-refresh the app.
+
+**Reports with no photo of yours:** `node scripts/fetch-seed-photos.mjs` tries to download freely-licensed
+photos from Wikimedia Commons for them (credits go in `CREDITS.md`).
 
 | Photo name | Your file | Shown on |
 |---|---|---|
-| `khalda-road` | `pot1.jpg` | **Before** — asphalt broken up along the kerb lane (Khalda, resolved) |
-| `khalda-road-fixed` | `pot2.jpg` | **After** — lane resurfaced |
-| `marka-pothole` | `b1.jpg` | **Before** — pothole in the middle of a side street (Marka, resolved) |
-| `marka-pothole-fixed` | `b2.jpg` | **After** — pothole patched |
-| `sweifieh-pothole` | `c1.jpg` | **Before** — pothole full of reflector pieces (Sweifieh, resolved) |
-| `sweifieh-pothole-fixed` | `c2.jpg` | **After** — pothole filled |
-| `rainbow-pothole` | — | Deep pothole on Rainbow Street |
+| `rainbow-pothole` | `jordan.jpeg` | Deep pothole on Rainbow Street — open for funding |
+| `abu-nseir-potholes` | `pothole2.jpeg` | Potholes on the Abu Nseir bus route — auto-funded by Gemma |
+| `paris-square-road` | `pothole3.jpeg` | Vague road report behind Paris Square — waiting for a human |
+| `abdoun-sign` | `cook3.jpeg` | No-entry sign knocked flat in Abdoun — open for funding |
+| `downtown-bins` | `cook.jpeg` | Overflowing bins near the Roman Theatre — waiting for a human |
+| `khalda-road` / `khalda-road-fixed` | `pot1.jpg` / `pot2.jpg` | Before / after — Khalda lane resurfaced (resolved) |
+| `marka-pothole` / `marka-pothole-fixed` | `b1.jpg` / `b2.jpg` | Before / after — Marka pothole patched (resolved) |
+| `sweifieh-pothole` / `sweifieh-pothole-fixed` | `c1.jpg` / `c2.jpg` | Before / after — Sweifieh pothole filled (resolved) |
 | `kalha-stairs-lights` | — | Unlit public stairs (Kalha stairs) |
 | `burst-main` | — | Burst water main flooding a sidewalk |
 | `school-sidewalk` | — | Lifted sidewalk slabs outside a school |
-| `roman-theatre-drain` | — | Storm drain packed with rubble |
 | `jubeiha-swing` | — | Snapped swing chain in a park |
-| `paris-square-steps` | — | Crumbling public steps |
-| `abdoun-lamp` | — | Flickering street lamp |
-| `abu-nseir-potholes` | — | Cluster of potholes on a bus route |
 | `spam-tyres` | — | The rejected spam post (any tyre / ad photo) |

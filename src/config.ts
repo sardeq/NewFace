@@ -19,11 +19,16 @@ export const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as stri
  * OPENROUTER_API_KEY / OPENROUTER_MODEL from Supabase secrets — the key never reaches the browser.
  */
 export const OPENROUTER_MODEL =
-  (import.meta.env.VITE_OPENROUTER_MODEL as string | undefined) || 'google/gemma-4-26b-a4b-it'
+  (import.meta.env.VITE_OPENROUTER_MODEL as string | undefined) || 'google/gemma-4-26b-a4b-it:free'
 
-/** AI auto-decision thresholds (screen + recommend; admins can always override). */
+/**
+ * AI auto-decision thresholds (admins can always override).
+ * At or above `autoAccept`, Gemma's "accept" is final: reports are verified AND opened for funding at
+ * Gemma's cost estimate, and verified contractors' bids are awarded. Below it, a human decides.
+ * Keep in sync with AUTO_ACCEPT / AUTO_REJECT in supabase/functions/ai-screen/index.ts.
+ */
 export const AI_THRESHOLDS = {
-  autoAccept: 0.8,
+  autoAccept: 0.7,
   autoReject: 0.9,
   /** Cost estimate is auto-approved for fundraising if within this factor of the AI range. */
   costTolerance: 0.25,

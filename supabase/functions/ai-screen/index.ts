@@ -1,7 +1,7 @@
 // Supabase Edge Function: ai-screen
 // Server-side Gemma (OpenRouter) screening — keeps the API key secret and makes AI decisions authoritative.
 //
-//   supabase secrets set OPENROUTER_API_KEY=sk-or-...  [OPENROUTER_MODEL=google/gemma-4-26b-a4b-it]
+//   supabase secrets set OPENROUTER_API_KEY=sk-or-...  [OPENROUTER_MODEL=google/gemma-4-26b-a4b-it:free]
 //   supabase functions deploy ai-screen
 //
 // Body shapes:
@@ -17,9 +17,17 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 const APP = 'Matab'
 const CITY = 'Amman'
 const CUR = 'JOD'
-const MODEL = Deno.env.get('OPENROUTER_MODEL') ?? 'google/gemma-4-26b-a4b-it'
+// Free on OpenRouter (no credits needed, daily request limit) and accepts images.
+const MODEL = Deno.env.get('OPENROUTER_MODEL') ?? 'google/gemma-4-26b-a4b-it:free'
 const KEY = Deno.env.get('OPENROUTER_API_KEY') ?? ''
-const AUTO_ACCEPT = 0.8
+// Used when MODEL is unknown, busy or rate-limited: OpenRouter's free router picks any free model that can
+// handle the request (images included). Override with the OPENROUTER_FALLBACK_MODEL secret.
+const FALLBACK_MODEL = Deno.env.get('OPENROUTER_FALLBACK_MODEL') ?? 'openrouter/free'
+// At or above AUTO_ACCEPT Gemma's "accept" is final — no admin step:
+//   reports → verified + fundraising opened at Gemma's cost estimate
+//   bids    → awarded (verified contractors only)
+// Below it, the item waits for a human. Keep in sync with AI_THRESHOLDS in src/config.ts.
+const AUTO_ACCEPT = 0.7
 const AUTO_REJECT = 0.9
 const CATEGORIES = ['roads', 'lighting', 'water', 'sidewalks', 'signage', 'drainage', 'parks', 'other']
 
@@ -61,31 +69,141 @@ const cors = {
 // deno-lint-ignore no-explicit-any
 type Json = Record<string, any>
 
-async function gemma(system: string, user: string | Json[]): Promise<Json> {
-  const body = (json: boolean) =>
-    JSON.stringify({
-      model: MODEL,
-      temperature: 0.2,
-      max_tokens: 600,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-      ...(json ? { response_format: { type: 'json_object' } } : {}),
-    })
-  const send = (json: boolean) =>
-    fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json', 'X-Title': APP },
-      body: body(json),
-    })
-  let res = await send(true)
-  if (res.status === 400) res = await send(false)
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
-  const j = await res.json()
-  const text: string = j.choices?.[0]?.message?.content ?? ''
+/** Gemma's single funding goal from its cost range: the midpoint, rounded to 10. 0 if it gave no range. */
+const goalFrom = (range: number[]) => {
+  const [lo, hi] = range
+  if (!(hi > 0)) return 0
+  return Math.max(10, Math.round(((lo > 0 ? lo : hi) + hi) / 2 / 10) * 10)
+}
+
+/** Pull the first {...} object out of a model reply (tolerates ```json fences and chatter). */
+function parseJson(text: string): Json | null {
   const s = text.replace(/```(?:json)?/gi, '')
-  return JSON.parse(s.slice(s.indexOf('{'), s.lastIndexOf('}') + 1))
+  const a = s.indexOf('{')
+  const b = s.lastIndexOf('}')
+  if (a < 0 || b <= a) return null
+  try {
+    return JSON.parse(s.slice(a, b + 1))
+  } catch {
+    return null
+  }
+}
+
+/** Free OpenRouter models that accept images — discovered from the live model list, cached per instance. */
+let freeVisionCache: string[] | null = null
+async function freeVisionModels(): Promise<string[]> {
+  if (freeVisionCache) return freeVisionCache
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/models')
+    const { data } = (await res.json()) as { data: Json[] }
+    freeVisionCache = data
+      .filter((m) => String(m.id).endsWith(':free'))
+      .filter((m) => (m.architecture?.input_modalities ?? []).includes('image'))
+      .filter((m) => (m.architecture?.output_modalities ?? ['text']).includes('text'))
+      .map((m) => String(m.id))
+  } catch (e) {
+    console.error('could not list OpenRouter models', e)
+    freeVisionCache = []
+  }
+  return freeVisionCache
+}
+
+/** Text of a reply. Reasoning models sometimes leave `content` empty and put everything in `reasoning`. */
+const replyText = (j: Json): string => {
+  const m = j.choices?.[0]?.message ?? {}
+  const c = typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((p: Json) => p.text ?? '').join('') : ''
+  return c.trim() || String(m.reasoning ?? '').trim()
+}
+
+/**
+ * Ask Gemma for a JSON verdict. Tries the configured model, the fallback, then up to 3 other free
+ * vision models from OpenRouter's live list. Per model: JSON mode first, then plain; with the photo,
+ * then text-only if the model refuses images. Throws one error listing what each model said.
+ */
+async function gemma(system: string, user: string | Json[]): Promise<Json> {
+  const textOnly = Array.isArray(user) ? user.filter((c) => c.type === 'text') : user
+  const contents = Array.isArray(user) && textOnly.length !== user.length ? [user, textOnly] : [user]
+  const tried: string[] = []
+  const errors: string[] = []
+  const fail = (model: string, why: string) => {
+    errors.push(`${model}: ${why}`)
+    console.error(`[gemma] ${model}: ${why}`)
+  }
+
+  const attempt = async (model: string): Promise<Json | null> => {
+    tried.push(model)
+    for (const content of contents) {
+      for (const json of [true, false]) {
+        let res: Response
+        try {
+          res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json', 'X-Title': APP },
+            body: JSON.stringify({
+              model,
+              temperature: 0.2,
+              // Room for "thinking" models: with a small budget they spend it all reasoning and reply empty.
+              max_tokens: 2000,
+              messages: [
+                { role: 'system', content: system },
+                { role: 'user', content },
+              ],
+              ...(json ? { response_format: { type: 'json_object' } } : {}),
+            }),
+          })
+        } catch (e) {
+          fail(model, `network error ${(e as Error).message}`)
+          return null
+        }
+        const raw = await res.text()
+        if (!res.ok) {
+          let msg = raw.slice(0, 160)
+          try {
+            msg = JSON.parse(raw).error?.message ?? msg
+          } catch {
+            /* keep raw */
+          }
+          if (res.status === 401) throw new Error(`OpenRouter rejected the API key (401): ${msg}`)
+          fail(model, `HTTP ${res.status} ${msg}`)
+          if (res.status === 400) continue // try plain mode / text-only
+          return null // 402 / 404 / 429 / 5xx → next model
+        }
+        let j: Json
+        try {
+          j = JSON.parse(raw)
+        } catch {
+          fail(model, 'non-JSON HTTP response')
+          continue
+        }
+        if (j.error) {
+          fail(model, j.error.message ?? JSON.stringify(j.error))
+          return null
+        }
+        const text = replyText(j)
+        const parsed = parseJson(text)
+        if (parsed) return parsed
+        fail(model, text ? `not JSON: ${text.slice(0, 80)}` : `empty reply (finish: ${j.choices?.[0]?.finish_reason ?? '?'})`)
+        if (json) continue // retry the same model without JSON mode
+        return null
+      }
+    }
+    return null
+  }
+
+  for (const model of [...new Set([MODEL, FALLBACK_MODEL])]) {
+    const r = await attempt(model)
+    if (r) return r
+  }
+  const extra = (await freeVisionModels()).filter((m) => !tried.includes(m)).slice(0, 3)
+  for (const model of extra) {
+    const r = await attempt(model)
+    if (r) return r
+  }
+  const all = errors.join(' | ')
+  const limited = /rate limit|per-day|429/i.test(all)
+  throw new Error(
+    (limited ? 'OpenRouter free-tier limit reached. ' : 'No model returned a usable answer. ') + all.slice(0, 700),
+  )
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number(n) || 0))
@@ -128,7 +246,9 @@ Deno.serve(async (req) => {
     new Response(JSON.stringify(data), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
   try {
-    if (!KEY) return reply({ error: 'OPENROUTER_API_KEY secret is not set' }, 500)
+    if (!KEY) {
+      return reply({ error: 'OPENROUTER_API_KEY secret is not set — run: supabase secrets set OPENROUTER_API_KEY=sk-or-...' }, 500)
+    }
     const { kind, input, issueId, bidId } = await req.json()
 
     // Caller identity (RLS-scoped) + service client for authoritative writes.
@@ -145,8 +265,22 @@ Deno.serve(async (req) => {
       if (!issue || issue.author_id !== auth.user.id) return reply({ error: 'Not your report' }, 403)
       const a = await screenIssue({ description: issue.description, photo: issue.photos?.[0], address: issue.address, district: issue.district })
       const accept = a.verdict === 'accept' && a.confidence >= AUTO_ACCEPT
-      const reject = a.verdict === 'reject' && a.confidence >= AUTO_REJECT
-      await admin
+      const reject = !accept && a.verdict === 'reject' && a.confidence >= AUTO_REJECT
+      const goal = accept ? goalFrom(a.costRange) : 0
+      const fund = goal > 0
+      const pct = Math.round(a.confidence * 100)
+      const costCheck = fund
+        ? {
+            verdict: 'accept',
+            confidence: a.confidence,
+            reasons: [`Goal set automatically from Gemma's ${CUR} ${a.costRange[0]}–${a.costRange[1]} estimate (${pct}% confidence).`],
+            model: MODEL,
+            source: 'gemma',
+            at: new Date().toISOString(),
+          }
+        : null
+      const status = reject ? 'rejected' : fund ? 'open_for_funding' : 'pending_review'
+      const { error: upErr } = await admin
         .from('issues')
         .update({
           ai: a,
@@ -154,19 +288,36 @@ Deno.serve(async (req) => {
           category: a.category,
           severity: a.severity,
           verified_by: accept ? 'ai' : null,
-          status: reject ? 'rejected' : 'pending_review',
+          status,
+          estimated_cost: fund ? goal : null,
+          cost_check: costCheck,
           rejection_reason: reject ? a.reasons[0] ?? 'Not an infrastructure issue.' : null,
         })
         .eq('id', issueId)
-      await admin.from('status_events').insert({
-        issue_id: issueId,
-        status: reject ? 'rejected' : 'pending_review',
-        note: accept
-          ? `Auto-verified by Gemma (${Math.round(a.confidence * 100)}% confidence). Waiting for a cost estimate.`
-          : reject
-            ? 'Screened out by Gemma. The author can appeal.'
-            : 'Gemma was unsure — queued for a human reviewer.',
-      })
+      if (upErr) throw upErr
+
+      const events: Json[] = [
+        {
+          issue_id: issueId,
+          status: reject ? 'rejected' : 'pending_review',
+          note: accept
+            ? `Auto-verified by Gemma (${pct}% confidence).` + (fund ? '' : ' Waiting for a cost estimate.')
+            : reject
+              ? 'Screened out by Gemma. The author can appeal.'
+              : `Gemma was unsure (${pct}% confidence) — queued for a human reviewer.`,
+        },
+      ]
+      if (fund) events.push({ issue_id: issueId, status: 'open_for_funding', note: `Estimate ${CUR} ${goal} set by Gemma. Fundraising open.` })
+      await admin.from('status_events').insert(events)
+      if (fund || reject) {
+        await admin.rpc('notify', {
+          p_user: issue.author_id,
+          p_kind: 'status',
+          p_title: fund ? 'Your report is open for funding' : 'Your report was closed',
+          p_body: fund ? `${a.title} — goal ${CUR} ${goal}.` : a.reasons[0] ?? 'Not an infrastructure issue.',
+          p_link: `/issue/${issueId}`,
+        })
+      }
       return reply(a)
     }
 
@@ -174,8 +325,10 @@ Deno.serve(async (req) => {
 
     if (kind === 'bid') {
       let payload = input
+      // deno-lint-ignore no-explicit-any
+      let bid: any = null
       if (bidId) {
-        const { data: bid } = await admin.from('bids').select('*, issues(*), profiles!bids_contractor_id_fkey(*)').eq('id', bidId).single()
+        ;({ data: bid } = await admin.from('bids').select('*, issues(*), profiles!bids_contractor_id_fkey(*)').eq('id', bidId).single())
         if (!bid || bid.contractor_id !== auth.user.id) return reply({ error: 'Not your bid' }, 403)
         const { count } = await admin.from('stories').select('id', { count: 'exact', head: true }).eq('contractor_id', bid.contractor_id)
         payload = {
@@ -194,7 +347,24 @@ Deno.serve(async (req) => {
         source: 'gemma',
         at: new Date().toISOString(),
       }
-      if (bidId) await admin.from('bids').update({ ai: a }).eq('id', bidId)
+      if (bidId) {
+        await admin.from('bids').update({ ai: a }).eq('id', bidId)
+        // Confident accept from Gemma → award the job without the desk (verified contractors, first good bid wins).
+        const canAward =
+          a.verdict === 'accept' &&
+          a.confidence >= AUTO_ACCEPT &&
+          bid.profiles?.verified === true &&
+          bid.issues?.assigned_bid_id == null &&
+          bid.issues?.status === 'open_for_funding'
+        if (canAward) {
+          const { error: awardErr } = await admin.rpc('auto_award_bid', {
+            p_bid: bidId,
+            p_note: `Awarded automatically by Gemma (score ${a.score}, ${Math.round(a.confidence * 100)}% confidence).`,
+          })
+          if (awardErr) console.error('auto award failed', awardErr)
+          else return reply({ ...a, autoAwarded: true })
+        }
+      }
       return reply(a)
     }
 
@@ -205,6 +375,8 @@ Deno.serve(async (req) => {
 
     return reply({ error: 'Unknown kind' }, 400)
   } catch (e) {
-    return reply({ error: (e as Error).message }, 500)
+    const msg = (e as Error)?.message ?? String(e)
+    console.error('[ai-screen]', msg)
+    return reply({ error: msg }, 500)
   }
 })

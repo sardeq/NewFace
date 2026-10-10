@@ -32,7 +32,7 @@ export function BidForm({ issue, onDone }: { issue: Issue; onDone?: (b: Bid) => 
       const b = await submit.mutateAsync({ issueId: issue.id, amount: Number(amount), days: Number(days), message, ai })
       setDone(b)
       onDone?.(b)
-      toast('Bid submitted to the municipal desk')
+      toast(b.status === 'approved' ? 'Work authorised — Gemma approved your bid' : 'Bid submitted to the municipal desk')
     } catch (e) {
       toast((e as Error).message, 'err')
     } finally {
@@ -43,10 +43,17 @@ export function BidForm({ issue, onDone }: { issue: Issue; onDone?: (b: Bid) => 
   if (done)
     return (
       <div className="bid-done">
-        <p>
-          <strong>Bid filed.</strong> The municipal desk will review it — you’ll get a dispatch the moment it’s approved and
-          you’re authorised to start.
-        </p>
+        {done.status === 'approved' ? (
+          <p>
+            <strong>Work authorised.</strong> Gemma approved your bid automatically
+            {done.authorization ? ` — authorisation ${done.authorization}` : ''}. You may begin physical work.
+          </p>
+        ) : (
+          <p>
+            <strong>Bid filed.</strong> The municipal desk will review it — you’ll get a dispatch the moment it’s approved and
+            you’re authorised to start.
+          </p>
+        )}
         {done.ai && <AiSlip a={done.ai} heading="Gemma bid review" compact />}
       </div>
     )

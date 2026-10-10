@@ -27,7 +27,20 @@ export class AiError extends Error {}
 
 async function callEdge(kind: 'issue' | 'bid' | 'cost', input: unknown): Promise<unknown> {
   const { data, error } = await supabase.functions.invoke('ai-screen', { body: { kind, input } })
-  if (error) throw new AiError(error.message)
+  if (error) {
+    // The function replies { error: "..." } — surface that instead of the generic "non-2xx status code".
+    let detail = error.message
+    const ctx = (error as { context?: Response }).context
+    if (ctx && typeof ctx.json === 'function') {
+      try {
+        const body = (await ctx.clone().json()) as { error?: string }
+        if (body?.error) detail = body.error
+      } catch {
+        /* not JSON */
+      }
+    }
+    throw new AiError(`ai-screen: ${detail}`)
+  }
   return data
 }
 

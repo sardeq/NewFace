@@ -131,10 +131,11 @@ insert into seed_issue values
    'accept', 0.95, 'A long strip of failed asphalt is holding water along a busy street.', 300, 800, null, 4, 0),
 
   ('b1000000-0000-4000-8000-000000000006', 6, 'a1000000-0000-4000-8000-000000000005', 5, 'pending_review',
-   'Storm drain packed with rubble near the Roman Theatre',
-   'The drain grate on the corner by the theatre steps is completely filled with rubble and plastic. Last rain the whole corner flooded and shops had water inside.',
-   'drainage', 3, 31.9515, 35.9395, 'Hashemite Plaza corner', 'Downtown', 'roman-theatre-drain', null, 0, 'ai', null,
-   'accept', 0.88, 'A blocked storm drain is causing street flooding next to shops.', 250, 900, null, 1, 0),
+   'Overflowing bins spilling onto the street near the Roman Theatre',
+   'The bins on the corner by the theatre steps have not been emptied for days. Rubbish is spilling across the sidewalk and into the road, and the smell reaches the shops.',
+   'other', 3, 31.9515, 35.9395, 'Hashemite Plaza corner', 'Downtown', 'downtown-bins', null, 0, null, null,
+   'review', 0.64, 'Rubbish is overflowing from public bins onto the street.', 50, 300,
+   array['Waste collection is a service problem rather than damaged infrastructure.', 'May belong with the cleaning department instead of a repair fund.'], 1, 0),
 
   ('b1000000-0000-4000-8000-000000000007', 7, 'a1000000-0000-4000-8000-000000000004', 70, 'open_for_funding',
    'Snapped swing chain at Jubeiha neighbourhood park',
@@ -149,22 +150,22 @@ insert into seed_issue values
    'accept', 0.96, 'A spreading pothole in the middle of a residential lane.', 100, 300, null, 7, 0),
 
   ('b1000000-0000-4000-8000-000000000009', 9, 'a1000000-0000-4000-8000-000000000001', 3, 'pending_review',
-   'Crumbling public steps behind Paris Square',
-   'steps broken, need fix',
-   'sidewalks', 3, 31.9585, 35.9208, 'Behind Paris Square', 'Jabal Al-Weibdeh', 'paris-square-steps', null, 0, null, null,
-   'review', 0.62, 'Public steps appear damaged.', 400, 2000,
-   array['Description is very short.', 'Photo is dark; extent of damage unclear.'], 0, 0),
+   'Road edge breaking up behind Paris Square',
+   'road broken, need fix',
+   'roads', 3, 31.9585, 35.9208, 'Behind Paris Square', 'Jabal Al-Weibdeh', 'paris-square-road', null, 0, null, null,
+   'review', 0.62, 'Road surface appears damaged.', 150, 900,
+   array['Description is very short.', 'Photo is small; extent of damage unclear.'], 0, 0),
 
   ('b1000000-0000-4000-8000-000000000010', 10, 'a1000000-0000-4000-8000-000000000004', 120, 'open_for_funding',
-   'Street lamp flickering like a strobe all night',
-   'The lamp outside building 14 flickers on and off every second from sunset to sunrise. It is giving residents headaches and the corner is basically dark.',
-   'lighting', 2, 31.9432, 35.8801, 'Abdoun Circle, bldg 14', 'Abdoun', 'abdoun-lamp', 220, 180, 'ai', null,
-   'accept', 0.83, 'A faulty street lamp is flickering through the night.', 120, 400, null, 1, 1),
+   'No-entry sign knocked flat at an Abdoun junction',
+   'The no-entry sign on the corner has been knocked off its post and is lying in the road. Cars keep turning into the one-way street the wrong way, especially at night.',
+   'signage', 4, 31.9432, 35.8801, 'Abdoun Circle, side street', 'Abdoun', 'abdoun-sign', 220, 180, 'ai', null,
+   'accept', 0.83, 'A knocked-down no-entry sign is letting cars into a one-way street.', 80, 450, null, 1, 1),
 
-  ('b1000000-0000-4000-8000-000000000011', 11, 'a1000000-0000-4000-8000-000000000004', 9, 'pending_review',
+  ('b1000000-0000-4000-8000-000000000011', 11, 'a1000000-0000-4000-8000-000000000004', 9, 'open_for_funding',
    'Cluster of potholes on the Abu Nseir bus route',
    'Five or six potholes in a row along the bus lane by the roundabout. Buses slam through them and the shaking is cracking the curb as well.',
-   'roads', 3, 32.0572, 35.8831, 'Abu Nseir roundabout', 'Abu Nseir', 'abu-nseir-potholes', null, 0, 'ai', null,
+   'roads', 3, 32.0572, 35.8831, 'Abu Nseir roundabout', 'Abu Nseir', 'abu-nseir-potholes', 1200, 85, 'ai', null,
    'accept', 0.87, 'Several potholes along a bus lane are damaging the road edge.', 800, 3000, null, 1, 0),
 
   ('b1000000-0000-4000-8000-000000000012', 12, 'a1000000-0000-4000-8000-000000000001', 960, 'resolved',
@@ -193,7 +194,8 @@ insert into seed_timeline values
   ('b1000000-0000-4000-8000-000000000005', 360, 300,  200,  168),   -- Khalda road strip
   ('b1000000-0000-4000-8000-000000000007', 48,  null, null, null),  -- swing
   ('b1000000-0000-4000-8000-000000000008', 636, 620,  600,  576),   -- Marka pothole
-  ('b1000000-0000-4000-8000-000000000010', 100, null, null, null),  -- flickering lamp
+  ('b1000000-0000-4000-8000-000000000010', 100, null, null, null),  -- Abdoun no-entry sign
+  ('b1000000-0000-4000-8000-000000000011', 8.9, null, null, null),  -- Abu Nseir potholes (auto-funded by Gemma)
   ('b1000000-0000-4000-8000-000000000012', 920, 880,  850,  816);   -- Sweifieh pothole
 
 -- Oldest first, so ticket refs (MT-0100, …) follow the order reports came in.
@@ -357,7 +359,7 @@ from (values
   (10,          'b1000000-0000-4000-8000-000000000004', 'a1000000-0000-4000-8000-000000000005', 'My nephew goes to this school. Donated 20.'),
   (11.5,        'b1000000-0000-4000-8000-000000000004', 'a1000000-0000-4000-8000-000000000006', 'Estimate includes root barrier so this does not happen again.'),
   (40,          'b1000000-0000-4000-8000-000000000007', 'a1000000-0000-4000-8000-000000000001', 'Taking my kids here on weekends, happy to help.'),
-  (3,           'b1000000-0000-4000-8000-000000000006', 'a1000000-0000-4000-8000-000000000002', 'Shops on that corner lost stock last winter because of this.'),
+  (3,           'b1000000-0000-4000-8000-000000000006', 'a1000000-0000-4000-8000-000000000002', 'Shop owners on that corner have been complaining about this for a week.'),
   (167,         'b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006', 'Resurfaced the whole strip, not just patched. Thanks Rana for reporting.')
 ) as c(h, issue, author, body);
 
@@ -431,8 +433,8 @@ from (
   from public.issues i join public.bids b on b.id = i.assigned_bid_id
   where i.id = 'b1000000-0000-4000-8000-000000000002'
   union all
-  select 'a1000000-0000-4000-8000-000000000006', 'status', '3 reports waiting for triage',
-         'Gemma auto-verified 2, flagged 1 for review.', '/admin', false, 2
+  select 'a1000000-0000-4000-8000-000000000006', 'status', '2 reports waiting for triage',
+         'Gemma was under 70% sure on both — they need a human decision.', '/admin', false, 2
 ) n;
 
 -- ───────── 10. finish ─────────

@@ -1,13 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { HAS_SUPABASE, SUPABASE_ANON_KEY, SUPABASE_URL } from '../config'
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../config'
 
-export const supabase: SupabaseClient | null = HAS_SUPABASE
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true },
-    })
-  : null
-
-export function requireSupabase(): SupabaseClient {
-  if (!supabase) throw new Error('Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).')
-  return supabase
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Supabase is not configured — set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env')
 }
+
+export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true },
+})
+
+export const requireSupabase = (): SupabaseClient => supabase

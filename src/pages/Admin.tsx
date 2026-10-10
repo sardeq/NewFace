@@ -4,7 +4,6 @@ import { Icon } from '../components/Icon'
 import { AiSlip } from '../components/AiPanel'
 import { EventLog, LifecycleRail } from '../components/Timeline'
 import { MiniMap } from '../components/Maps'
-import { sketchForCategory } from '../components/Sketch'
 import { Avatar, Button, Empty, Field, FundingTape, Photo, Segmented, Skeleton, Stamp, toast, Urgency } from '../components/ui'
 import { useBids, useDecideBid, useEvents, useProfiles, useQueue, useResolveIssue, useStartWork, useUpdateIssue } from '../data/hooks'
 import { useSession } from '../session/SessionContext'
@@ -383,7 +382,7 @@ function ResolvePanel({ issue }: { issue: Issue }) {
     setAfter((a) => [...a, ...next].slice(0, 4))
   }
   const publish = async () => {
-    await resolve.mutateAsync({ issueId: issue.id, afterPhotos: after.length ? after : [`sketch:${sketchForCategory(issue.category)}:fixed`], summary, finalCost: Number(cost) })
+    await resolve.mutateAsync({ issueId: issue.id, afterPhotos: after, summary, finalCost: Number(cost) })
     toast('Success story published')
   }
   return (
@@ -414,10 +413,10 @@ function ResolvePanel({ issue }: { issue: Issue }) {
       <Field label={`Final cost · ${APP.currency}`}>
         <input className="input num" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value.replace(/[^\d.]/g, ''))} />
       </Field>
-      <Button variant="moss" icon="stitch" disabled={summary.trim().length < 10 || !(Number(cost) >= 0)} loading={resolve.isPending} onClick={publish}>
+      <Button variant="moss" icon="stitch" disabled={!after.length || summary.trim().length < 10 || !(Number(cost) >= 0)} loading={resolve.isPending} onClick={publish}>
         Resolve & publish story
       </Button>
-      {!after.length && <p className="small muted">No after photo? A field sketch stands in — real photos build far more trust.</p>}
+      {!after.length && <p className="small muted">Add at least one “after” photo — it becomes the public proof of the repair.</p>}
     </fieldset>
   )
 }

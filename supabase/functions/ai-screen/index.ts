@@ -14,7 +14,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-const APP = 'Mend'
+const APP = 'Matab'
 const CITY = 'Amman'
 const CUR = 'JOD'
 const MODEL = Deno.env.get('OPENROUTER_MODEL') ?? 'google/gemma-4-26b-a4b-it'
@@ -110,13 +110,15 @@ function normIssue(r: Json, description: string) {
 }
 
 async function screenIssue(i: { description: string; photo?: string; address?: string; district?: string }) {
+  const photo = i.photo && /^(https?:|data:image\/)/.test(i.photo) ? i.photo : undefined
   const content: Json[] = [
     {
       type: 'text',
-      text: `Location: ${i.address ?? 'unknown'} (${i.district ?? 'unknown district'})\nCitizen description: """${i.description}"""\n${i.photo ? 'The attached photo was taken by the citizen at the location.' : 'No photo attached.'}`,
+      text: `Location: ${i.address ?? 'unknown'} (${i.district ?? 'unknown district'})\nCitizen description: """${i.description}"""\n${photo ? 'The attached photo was taken by the citizen at the location.' : 'No photo attached.'}`,
     },
   ]
-  if (i.photo) content.push({ type: 'image_url', image_url: { url: i.photo } })
+  // Only real images go to the model — `sketch:<kind>` placeholders are drawn by the UI.
+  if (photo) content.push({ type: 'image_url', image_url: { url: photo } })
   return normIssue(await gemma(ISSUE_SYSTEM, content), i.description)
 }
 

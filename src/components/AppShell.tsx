@@ -5,12 +5,10 @@ import { Avatar, Toaster } from './ui'
 import { ActionsProvider } from './Actions'
 import { useMarkRead, useNotifications } from '../data/hooks'
 import { useSession } from '../session/SessionContext'
-import { mockApi } from '../data'
 import { APP } from '../config'
 import { aiModeLabel } from '../lib/ai'
 import { ROLE_LABEL, timeAgo } from '../lib/format'
 import type { Role } from '../types'
-import { useQueryClient } from '@tanstack/react-query'
 
 interface NavItem {
   to: string
@@ -72,7 +70,7 @@ export function AppShell() {
             <div>
               <Icon name="scan" size={13} /> {aiModeLabel()}
             </div>
-            <div>{mockApi ? 'Demo data · local' : 'Supabase · live'}</div>
+            <div>Supabase · live</div>
           </div>
         </nav>
         <main className="stage">
@@ -202,11 +200,9 @@ function Bell() {
 }
 
 function PersonaMenu() {
-  const { user, switchRole, isMock, signOut } = useSession()
+  const { user, signOut } = useSession()
   const [open, setOpen] = useState(false)
   const ref = useOutsideClose<HTMLDivElement>(open, () => setOpen(false))
-  const nav = useNavigate()
-  const qc = useQueryClient()
   if (!user)
     return (
       <Link to="/signin" className="btn btn-line btn-sm">
@@ -230,43 +226,10 @@ function PersonaMenu() {
               </div>
             </div>
           </div>
-          {isMock && (
-            <>
-              <div className="stitch-rule" />
-              <div className="mono caps muted pad-x">View the app as</div>
-              <div className="persona-switch">
-                {(['citizen', 'admin', 'contractor'] as Role[]).map((r) => (
-                  <button
-                    key={r}
-                    className={user.role === r ? 'on' : ''}
-                    onClick={async () => {
-                      await switchRole(r)
-                      setOpen(false)
-                      nav(r === 'admin' ? '/admin' : r === 'contractor' ? '/contractor' : '/')
-                    }}
-                  >
-                    <Icon name={r === 'admin' ? 'shield' : r === 'contractor' ? 'hardhat' : 'user'} size={16} />
-                    {ROLE_LABEL[r]}
-                  </button>
-                ))}
-              </div>
-              <button
-                className="menu-item"
-                onClick={() => {
-                  mockApi?.reset()
-                  qc.invalidateQueries()
-                  setOpen(false)
-                }}
-              >
-                <Icon name="refresh" size={16} /> Reset demo city
-              </button>
-            </>
-          )}
-          {!isMock && (
-            <button className="menu-item" onClick={() => signOut()}>
-              <Icon name="logout" size={16} /> Sign out
-            </button>
-          )}
+          <div className="stitch-rule" />
+          <button className="menu-item" onClick={() => signOut()}>
+            <Icon name="logout" size={16} /> Sign out
+          </button>
         </div>
       )}
     </div>

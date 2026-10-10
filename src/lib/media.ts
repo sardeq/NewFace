@@ -32,5 +32,3 @@ export function dataUrlToBlob(dataUrl: string): Blob {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
   return new Blob([bytes], { type: mime })
 }
-
-export const isSketch = (ref: string) => ref.startsWith('sketch:')

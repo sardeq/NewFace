@@ -4,11 +4,11 @@
  *   2. Fundraising requests (cost set) → screenCost()
  *   3. Contractor repair bids          → screenBid()
  *
- * Production path is the Supabase Edge Function `ai-screen` (keeps the OpenRouter key secret).
- * `direct` mode calls OpenRouter from the browser and is for local development only.
- * `heuristic` mode keeps the UI usable with no key at all.
+ * Every call goes through the Supabase Edge Function `ai-screen`, which holds the OpenRouter key and
+ * the prompts (supabase/functions/ai-screen/index.ts). If the function is unreachable, offline rules
+ * keep the UI usable and mark the result `source: 'heuristic'`.
  */
-import { AI_MODE, AI_THRESHOLDS, APP, OPENROUTER_KEY, OPENROUTER_MODEL, type AiMode } from '../config'
+import { AI_THRESHOLDS, APP, OPENROUTER_MODEL } from '../config'
 import { supabase } from './supabase'
 import { CATEGORIES } from './format'
 import type {
@@ -21,110 +21,14 @@ import type {
   Profile,
 } from '../types'
 
-// ───────────────────────────── prompts ─────────────────────────────
-// Keep these in sync with supabase/functions/ai-screen/index.ts
-
-const COST_GUIDE = `Typical ${APP.city} repair costs in ${APP.currency}:
-roads (pothole patch) 150–900, roads (resurfacing a stretch) 2000–15000,
-lighting (lamp/fixture) 120–600, lighting (pole replacement) 800–2500,
-water (pipe leak) 300–2500, sidewalks (slab/curb) 400–4000, signage 80–500,
-drainage (blocked inlet) 250–3000, parks (playground part) 300–5000.`
-
-export const ISSUE_SYSTEM = `You are the intake screener for ${APP.name}, a civic platform in ${APP.city}
-where citizens report damaged PUBLIC infrastructure so the municipality can fix it and
-neighbours can crowdfund repairs.
-
-Decide whether the report is a genuine, actionable public-infrastructure problem.
-ACCEPT: damage to public roads, lighting, water/sewer pipes, sidewalks, stairs, signage,
-drainage, parks, public furniture.
-REJECT: spam, ads, jokes, personal disputes, complaints about people, private property
-repairs, noise/behaviour complaints, photos clearly unrelated to the text, offensive content.
-REVIEW: plausible but vague, missing detail, or you are unsure.
-
-${COST_GUIDE}
-
-Respond with ONLY a JSON object, no prose:
-{
-  "verdict": "accept" | "reject" | "review",
-  "confidence": number 0..1,
-  "category": one of ${JSON.stringify(CATEGORIES)},
-  "severity": integer 1..5 (5 = immediate danger to people),
-  "title": short public headline, max 70 chars, no emoji,
-  "summary": one neutral sentence for the public post,
-  "cost_range": [min, max] in ${APP.currency},
-  "reasons": array of 1-3 short strings explaining the decision
-}`
-
-export const BID_SYSTEM = `You review contractor bids to repair public infrastructure for ${APP.name} (${APP.city}).
-Judge whether the bid is reasonable: price vs. the official estimate and typical cost range,
-timeline realism for the severity, clarity and professionalism of the method statement,
-and contractor track record. Overpriced (>40% above estimate), vague, or unverified bids
-should not be accepted. ${COST_GUIDE}
-
-Respond with ONLY a JSON object:
-{ "verdict": "accept" | "reject" | "review", "confidence": 0..1, "score": 0..100,
-  "reasons": array of 1-3 short strings }`
-
-export const COST_SYSTEM = `You approve fundraising campaigns for ${APP.name} (${APP.city}). A municipal admin
-has attached an official repair-cost estimate to a verified issue. Decide if the amount is
-reasonable to publicly crowdfund. Flag estimates that look inflated or implausibly low.
-${COST_GUIDE}
-
-Respond with ONLY a JSON object:
-{ "verdict": "accept" | "reject" | "review", "confidence": 0..1,
-  "reasons": array of 1-3 short strings }`
-
 // ───────────────────────────── transport ─────────────────────────────
-
-type Msg =
-  | { role: 'system' | 'user'; content: string }
-  | {
-      role: 'user'
-      content: Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }>
-    }
 
 export class AiError extends Error {}
 
-async function callOpenRouter(messages: Msg[]): Promise<unknown> {
-  if (!OPENROUTER_KEY) throw new AiError('No VITE_OPENROUTER_API_KEY set')
-  const send = async (jsonMode: boolean) =>
-    fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': location.origin,
-        'X-Title': APP.name,
-      },
-      body: JSON.stringify({
-        model: OPENROUTER_MODEL,
-        messages,
-        temperature: 0.2,
-        max_tokens: 600,
-        ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
-      }),
-    })
-  let res = await send(true)
-  // Some Gemma providers don't support response_format — retry in plain mode.
-  if (res.status === 400) res = await send(false)
-  if (!res.ok) throw new AiError(`OpenRouter ${res.status}: ${await res.text().catch(() => '')}`)
-  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
-  return extractJson(j.choices?.[0]?.message?.content ?? '')
-}
-
 async function callEdge(kind: 'issue' | 'bid' | 'cost', input: unknown): Promise<unknown> {
-  if (!supabase) throw new AiError('Supabase not configured')
   const { data, error } = await supabase.functions.invoke('ai-screen', { body: { kind, input } })
   if (error) throw new AiError(error.message)
   return data
-}
-
-export function extractJson(text: string): unknown {
-  const cleaned = text.replace(/```(?:json)?/gi, '').trim()
-  const start = cleaned.indexOf('{')
-  const end = cleaned.lastIndexOf('}')
-  if (start < 0 || end < start) throw new AiError('Model did not return JSON')
-  return JSON.parse(cleaned.slice(start, end + 1))
 }
 
 // ───────────────────────────── normalisers ─────────────────────────────
@@ -228,29 +132,9 @@ export interface IssueScreenInput {
   district?: string
 }
 
-export async function screenIssue(input: IssueScreenInput, mode: AiMode = AI_MODE): Promise<IssueAssessment> {
-  if (mode === 'heuristic') {
-    await sleep(900)
-    return heuristicIssue(input.description, Boolean(input.photo))
-  }
+export async function screenIssue(input: IssueScreenInput): Promise<IssueAssessment> {
   try {
-    const raw =
-      mode === 'edge'
-        ? await callEdge('issue', input)
-        : await callOpenRouter([
-            { role: 'system', content: ISSUE_SYSTEM },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Location: ${input.address ?? 'unknown'} (${input.district ?? 'unknown district'})\nCitizen description: """${input.description}"""\n${input.photo ? 'The attached photo was taken by the citizen at the location.' : 'No photo attached.'}`,
-                },
-                ...(input.photo ? [{ type: 'image_url' as const, image_url: { url: input.photo } }] : []),
-              ],
-            },
-          ])
-    return normIssue(raw, input.description)
+    return normIssue(await callEdge('issue', input), input.description)
   } catch (e) {
     console.warn('[ai] issue screening failed, using rules fallback', e)
     const h = heuristicIssue(input.description, Boolean(input.photo))
@@ -264,29 +148,21 @@ export interface BidScreenInput {
   contractor: Pick<Profile, 'company' | 'verified'> & { completedJobs: number }
 }
 
-export async function screenBid(input: BidScreenInput, mode: AiMode = AI_MODE): Promise<BidAssessment> {
-  const base = { model: OPENROUTER_MODEL, source: 'gemma' as const, at: new Date().toISOString() }
-  if (mode !== 'heuristic') {
-    try {
-      const raw = (
-        mode === 'edge'
-          ? await callEdge('bid', input)
-          : await callOpenRouter([
-              { role: 'system', content: BID_SYSTEM },
-              { role: 'user', content: JSON.stringify(input) },
-            ])
-      ) as Record<string, unknown>
-      return {
-        ...base,
-        verdict: asVerdict(raw.verdict),
-        confidence: clamp(asNum(raw.confidence, 0.5), 0, 1),
-        score: clamp(Math.round(asNum(raw.score, 50)), 0, 100),
-        reasons: asReasons(raw.reasons),
-      }
-    } catch (e) {
-      console.warn('[ai] bid screening failed, using rules fallback', e)
+export async function screenBid(input: BidScreenInput): Promise<BidAssessment> {
+  try {
+    const raw = (await callEdge('bid', input)) as Record<string, unknown>
+    return {
+      model: OPENROUTER_MODEL,
+      source: 'gemma',
+      at: new Date().toISOString(),
+      verdict: asVerdict(raw.verdict),
+      confidence: clamp(asNum(raw.confidence, 0.5), 0, 1),
+      score: clamp(Math.round(asNum(raw.score, 50)), 0, 100),
+      reasons: asReasons(raw.reasons),
     }
-  } else await sleep(700)
+  } catch (e) {
+    console.warn('[ai] bid screening failed, using rules fallback', e)
+  }
 
   // rules fallback
   const est = input.issue.estimatedCost ?? input.issue.ai?.costRange[1] ?? input.bid.amount
@@ -338,29 +214,20 @@ export interface CostScreenInput {
   estimatedCost: number
 }
 
-export async function screenCost(input: CostScreenInput, mode: AiMode = AI_MODE): Promise<CostAssessment> {
-  if (mode !== 'heuristic') {
-    try {
-      const raw = (
-        mode === 'edge'
-          ? await callEdge('cost', input)
-          : await callOpenRouter([
-              { role: 'system', content: COST_SYSTEM },
-              { role: 'user', content: JSON.stringify(input) },
-            ])
-      ) as Record<string, unknown>
-      return {
-        verdict: asVerdict(raw.verdict),
-        confidence: clamp(asNum(raw.confidence, 0.5), 0, 1),
-        reasons: asReasons(raw.reasons),
-        model: OPENROUTER_MODEL,
-        source: 'gemma',
-        at: new Date().toISOString(),
-      }
-    } catch (e) {
-      console.warn('[ai] cost screening failed, using rules fallback', e)
+export async function screenCost(input: CostScreenInput): Promise<CostAssessment> {
+  try {
+    const raw = (await callEdge('cost', input)) as Record<string, unknown>
+    return {
+      verdict: asVerdict(raw.verdict),
+      confidence: clamp(asNum(raw.confidence, 0.5), 0, 1),
+      reasons: asReasons(raw.reasons),
+      model: OPENROUTER_MODEL,
+      source: 'gemma',
+      at: new Date().toISOString(),
     }
-  } else await sleep(600)
+  } catch (e) {
+    console.warn('[ai] cost screening failed, using rules fallback', e)
+  }
 
   const [lo, hi] = input.issue.ai?.costRange ?? RANGES[input.issue.category]
   const tol = AI_THRESHOLDS.costTolerance
@@ -396,7 +263,4 @@ export function intakeOutcome(a: IssueAssessment): IntakeOutcome {
 export const costAutoApproved = (c: CostAssessment) =>
   c.verdict === 'accept' && c.confidence >= AI_THRESHOLDS.autoAccept
 
-export const aiModeLabel = (m: AiMode = AI_MODE) =>
-  m === 'edge' ? 'Gemma · edge function' : m === 'direct' ? 'Gemma · direct (dev)' : 'Offline rules'
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+export const aiModeLabel = () => 'Gemma · edge function'

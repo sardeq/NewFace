@@ -10,33 +10,16 @@ export const APP = {
   defaultCenter: { lat: 31.9539, lng: 35.9106 },
 } as const
 
-const env = import.meta.env
-
-export const SUPABASE_URL = (env.VITE_SUPABASE_URL as string | undefined) ?? ''
-export const SUPABASE_ANON_KEY = (env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? ''
-export const HAS_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
-
-export const OPENROUTER_KEY = (env.VITE_OPENROUTER_API_KEY as string | undefined) ?? ''
-export const OPENROUTER_MODEL =
-  (env.VITE_OPENROUTER_MODEL as string | undefined) || 'google/gemma-4-26b-a4b-it'
+// Read each variable by name: `import.meta.env` as a whole would inline every VITE_ var into the bundle.
+export const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? ''
+export const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? ''
 
 /**
- * How AI screening is executed:
- *  - edge:      Supabase Edge Function `ai-screen` (key stays server-side) — use in production
- *  - direct:    browser → OpenRouter with VITE_OPENROUTER_API_KEY (dev only, key is exposed)
- *  - heuristic: offline rules so the UI works with no key at all
- *  - auto:      edge if Supabase is configured, else direct if a key exists, else heuristic
+ * Display label only. Screening runs in the Supabase Edge Function `ai-screen`, which reads
+ * OPENROUTER_API_KEY / OPENROUTER_MODEL from Supabase secrets — the key never reaches the browser.
  */
-export type AiMode = 'edge' | 'direct' | 'heuristic'
-const requested = ((env.VITE_AI_MODE as string | undefined) ?? 'auto').toLowerCase()
-export const AI_MODE: AiMode =
-  requested === 'edge' || requested === 'direct' || requested === 'heuristic'
-    ? requested
-    : HAS_SUPABASE
-      ? 'edge'
-      : OPENROUTER_KEY
-        ? 'direct'
-        : 'heuristic'
+export const OPENROUTER_MODEL =
+  (import.meta.env.VITE_OPENROUTER_MODEL as string | undefined) || 'google/gemma-4-26b-a4b-it'
 
 /** AI auto-decision thresholds (screen + recommend; admins can always override). */
 export const AI_THRESHOLDS = {

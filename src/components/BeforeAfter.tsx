@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { Photo } from './ui'
 
 /** Drag the seam to compare before / after. Keyboard: ← → */
-export function BeforeAfter({ before, after, label }: { before: string; after: string; label: string }) {
+export function BeforeAfter({ before, after, label }: { before?: string; after?: string; label: string }) {
   const [pos, setPos] = useState(50)
   const ref = useRef<HTMLDivElement>(null)
   const move = (clientX: number) => {

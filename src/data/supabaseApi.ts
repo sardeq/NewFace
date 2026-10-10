@@ -105,7 +105,6 @@ function must<T>(res: { data: T | null; error: { message: string } | null }): T 
 }
 
 export class SupabaseApi implements Api {
-  readonly mode = 'supabase' as const
   private viewer: string | null = null
   private get sb() {
     return requireSupabase()

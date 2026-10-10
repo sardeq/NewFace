@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon, type IconName } from './Icon'
-import { Sketch, parseSketch } from './Sketch'
-import { isSketch } from '../lib/media'
 import { fmtMoney, pct, STATUS_META } from '../lib/format'
 import type { IssueStatus, Profile } from '../types'
 
-/* ───────── Photo: real image or field sketch ───────── */
-export function Photo({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  if (isSketch(src)) {
-    const { kind, fixed } = parseSketch(src)
-    return <Sketch kind={kind} fixed={fixed} className={className} />
-  }
+/* ───────── Photo: an uploaded image, or a plain tile if it's missing ───────── */
+export function Photo({ src, alt, className = '' }: { src?: string; alt: string; className?: string }) {
+  if (!src || !/^(https?:|data:image\/|blob:)/.test(src))
+    return (
+      <span className={`photo-missing ${className}`} role="img" aria-label={alt || 'No photo'}>
+        <Icon name="camera" size={22} />
+      </span>
+    )
   return <img src={src} alt={alt} className={className} loading="lazy" decoding="async" />
 }
 

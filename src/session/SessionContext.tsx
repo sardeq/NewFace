@@ -1,35 +1,23 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '../data'
-import { DEMO_PERSONAS } from '../data/mock/seed'
 import { supabase } from '../lib/supabase'
-import type { Profile, Role } from '../types'
+import type { Profile } from '../types'
 
 interface Session {
   user: Profile | null
   loading: boolean
-  /** mock mode: switch persona instantly. supabase mode: no-op (sign in as another account). */
-  switchRole: (role: Role) => Promise<void>
   signInWithPassword: (email: string, password: string) => Promise<void>
-  signUp: (v: { email: string; password: string; name: string; accountType: 'citizen' | 'contractor'; company?: string }) => Promise<void>
+  /** Resolves to true when the account still needs its email confirmed before it can sign in. */
+  signUp: (v: { email: string; password: string; name: string; accountType: 'citizen' | 'contractor'; company?: string }) => Promise<boolean>
+  resendConfirmation: (email: string) => Promise<void>
   signOut: () => Promise<void>
-  isMock: boolean
 }
 
 const Ctx = createContext<Session | null>(null)
-const PERSONA_KEY = 'matab.persona'
-
-function readPersona(): string | null {
-  try {
-    return localStorage.getItem(PERSONA_KEY)
-  } catch {
-    return null
-  }
-}
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient()
-  const isMock = api.mode === 'mock'
   const [user, setUser] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -45,51 +33,40 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
-    if (isMock) {
-      Promise.resolve(readPersona() ?? DEMO_PERSONAS.citizen).then(adopt)
-      return
-    }
-    if (!supabase) return
     supabase.auth.getSession().then(({ data }) => adopt(data.session?.user.id ?? null))
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => void adopt(s?.user.id ?? null))
     return () => sub.subscription.unsubscribe()
-  }, [adopt, isMock])
+  }, [adopt])
 
   const value = useMemo<Session>(
     () => ({
       user,
       loading,
-      isMock,
-      switchRole: async (role) => {
-        if (!isMock) return
-        const id = DEMO_PERSONAS[role]
-        try {
-          localStorage.setItem(PERSONA_KEY, id)
-        } catch {
-          /* ignore */
-        }
-        await adopt(id)
-      },
       signInWithPassword: async (email, password) => {
-        if (!supabase) throw new Error('Supabase is not configured — use the demo personas.')
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
       },
       signUp: async ({ email, password, name, accountType, company }) => {
-        if (!supabase) throw new Error('Supabase is not configured — use the demo personas.')
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { name, account_type: accountType, company } },
+          // Confirmation link lands back on this app (add the URL under Auth → URL Configuration → Redirect URLs).
+          options: { data: { name, account_type: accountType, company }, emailRedirectTo: location.origin },
         })
+        if (error) throw error
+        // With "Confirm email" on, an existing address gets a user with no identities instead of an error.
+        if (data.user && data.user.identities?.length === 0) throw new Error('An account with this email already exists — sign in instead.')
+        return !data.session
+      },
+      resendConfirmation: async (email) => {
+        const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: location.origin } })
         if (error) throw error
       },
       signOut: async () => {
-        if (supabase) await supabase.auth.signOut()
-        else await adopt(null)
+        await supabase.auth.signOut()
       },
     }),
-    [user, loading, isMock, adopt],
+    [user, loading],
   )
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

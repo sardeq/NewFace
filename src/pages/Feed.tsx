@@ -192,7 +192,7 @@ function RecentlyMended() {
       </header>
       <Link to={`/stories/${s.id}`} className="mended-pair">
         <figure>
-          <Photo src={issue?.photos[0] ?? 'sketch:pothole'} alt="Before" />
+          <Photo src={issue?.photos[0]} alt="Before" />
           <figcaption className="mono caps">Before</figcaption>
         </figure>
         <figure>

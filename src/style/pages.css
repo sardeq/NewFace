@@ -871,20 +871,6 @@
   font-size: 22px;
   font-weight: 800;
 }
-.demo-switch {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 14px;
-  border: 1px solid var(--signal-line);
-  border-radius: var(--r-2);
-  background: var(--signal-wash);
-}
-.demo-switch > span {
-  font-size: 12px;
-  margin-right: 6px;
-}
 .row-list {
   list-style: none;
   margin: 0;
@@ -1688,41 +1674,18 @@
 .signin-brand p {
   font-size: 12px;
 }
-.persona-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-.persona-pick {
-  width: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 14px;
-  align-items: center;
-  padding: 14px;
-  text-align: left;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-2);
-  background: var(--paper);
-  transition: all 0.15s;
-}
-.persona-pick > span {
-  display: grid;
-  gap: 2px;
-  font-size: 13.5px;
-}
-.persona-pick strong {
-  font-size: 15px;
-}
-.persona-pick:hover {
-  border-color: var(--accent);
-  background: var(--accent-wash);
-}
 .form-stack {
   display: grid;
   gap: 14px;
+}
+.form-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--signal-deep);
+  border-radius: var(--r-1);
+  background: var(--alert-wash);
+  color: var(--signal-deep);
+  font-size: 14px;
 }
 code {
   font-family: var(--f-code);

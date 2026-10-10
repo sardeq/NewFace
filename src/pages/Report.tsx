@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 import { Icon } from '../components/Icon'
 import { AiSlip } from '../components/AiPanel'
 import { LocationPicker } from '../components/Maps'
-import { sketchForCategory } from '../components/Sketch'
 import { Avatar, Button, Photo, Stamp, toast, Urgency } from '../components/ui'
 import { useCreateIssue } from '../data/hooks'
 import { useSession } from '../session/SessionContext'
@@ -106,7 +105,7 @@ export default function Report() {
     try {
       const issue = await create.mutateAsync({
         description: desc.trim(),
-        photos: photos.length ? photos : [`sketch:${sketchForCategory(ai.category)}`],
+        photos,
         location: point,
         address: place?.address ?? 'Unnamed street',
         district: place?.district ?? 'Unknown district',

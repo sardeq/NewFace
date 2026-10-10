@@ -5,12 +5,11 @@ import { Avatar, Empty, Segmented, Stamp } from '../components/ui'
 import { useDonations, useIssues, useNotifications } from '../data/hooks'
 import { useSession } from '../session/SessionContext'
 import { fmtDate, fmtDateTime, fmtMoney, ROLE_LABEL, ticketRef, timeAgo } from '../lib/format'
-import type { Role } from '../types'
 
 type Tab = 'reports' | 'donations' | 'dispatches'
 
 export default function Profile() {
-  const { user, isMock, switchRole } = useSession()
+  const { user } = useSession()
   const [tab, setTab] = useState<Tab>('reports')
   const { data: reports = [] } = useIssues({ sort: 'new', status: 'all', authorId: user?.id ?? '-' })
   const { data: donations = [] } = useDonations({ userId: user?.id ?? '-' })
@@ -48,17 +47,6 @@ export default function Profile() {
           <div><dt className="mono caps">Backed</dt><dd className="num">{backed}</dd></div>
         </dl>
       </header>
-
-      {isMock && (
-        <div className="demo-switch">
-          <span className="mono caps">Demo · view the app as</span>
-          {(['citizen', 'admin', 'contractor'] as Role[]).map((r) => (
-            <button key={r} className={`chip ${user.role === r ? 'on' : ''}`} onClick={() => switchRole(r)}>
-              {ROLE_LABEL[r]}
-            </button>
-          ))}
-        </div>
-      )}
 
       <Segmented
         label="Profile sections"

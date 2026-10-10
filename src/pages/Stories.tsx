@@ -33,7 +33,7 @@ function StoryCard({ story, issue }: { story: Story; issue?: Issue }) {
   const c = story.contractorId ? byId.get(story.contractorId) : null
   return (
     <article className="story-card">
-      <BeforeAfter before={issue?.photos[0] ?? 'sketch:pothole'} after={story.afterPhotos[0]} label={issue?.title ?? 'Repair'} />
+      <BeforeAfter before={issue?.photos[0]} after={story.afterPhotos[0]} label={issue?.title ?? 'Repair'} />
       <div className="story-body">
         <div className="mono caps muted">
           {issue ? ticketRef(issue.ref) : ''} · {issue?.district} · {fmtDate(story.createdAt)}
@@ -80,7 +80,7 @@ export function StoryDetail() {
       </Link>
       <div className="kicker mono caps">Success story · re: {issue ? ticketRef(issue.ref) : ''}</div>
       <h1>{issue?.title}</h1>
-      <BeforeAfter before={issue?.photos[0] ?? 'sketch:pothole'} after={story.afterPhotos[0]} label={issue?.title ?? ''} />
+      <BeforeAfter before={issue?.photos[0]} after={story.afterPhotos[0]} label={issue?.title ?? ''} />
       <div className="story-detail-grid">
         <div>
           <p className="lede">{story.summary}</p>

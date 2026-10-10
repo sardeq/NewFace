@@ -10,14 +10,12 @@ React 19 · TypeScript · Vite · Supabase · TanStack Query · Leaflet · no UI
 
 ## Run it
 
+All data lives in Supabase — set it up first (below), then:
+
 ```bash
 npm install
 npm run dev
 ```
-
-With no `.env.local` the app runs on a **seeded demo city** (Amman, 13 reports, bids, donations,
-success stories) stored in `localStorage`. Use the avatar menu → *View the app as* to switch between
-**Citizen**, **Municipal desk** (admin) and **Contractor**; *Reset demo city* restores the seed.
 
 ## Gemma screening (OpenRouter)
 
@@ -27,18 +25,25 @@ success stories) stored in `localStorage`. Use the avatar menu → *View the app
 | Fundraising request | Desk → *Check with Gemma & open funding* | Is the official cost estimate reasonable? Agreement opens the campaign automatically; otherwise reviewer override (logged publicly) |
 | Contractor bid | On submit | Score 0–100 + reasons; the desk sees “Gemma’s pick” but a human always approves work |
 
-Modes (`VITE_AI_MODE`): `edge` (Supabase Edge Function, key stays secret — use in production),
-`direct` (browser → OpenRouter, dev only), `heuristic` (offline rules, no key). `auto` picks for you.
+Every call goes through the Supabase Edge Function `ai-screen`, so the OpenRouter key stays secret.
+If the function is unreachable, offline rules screen the request and the result is labelled as such.
 Default model: `google/gemma-4-26b-a4b-it` (multimodal, so it also looks at the photo).
 
 ## Supabase
 
-1. Create a project, then `supabase link` and `supabase db push` (runs `supabase/migrations/0001_init.sql`:
-   tables, RLS, triggers, RPCs, `issue-media` storage bucket, realtime).
+1. Create a project, then `supabase link` and `supabase db push` — or paste the files in
+   `supabase/migrations/` into the SQL editor in order (`0001_init.sql`: tables, RLS, triggers, RPCs,
+   `issue-media` storage bucket, realtime; `0002_fixes.sql`).
 2. `supabase secrets set OPENROUTER_API_KEY=sk-or-...` and `supabase functions deploy ai-screen`.
-3. Put `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in `.env.local` — the app switches from demo data
-   to real accounts automatically.
-4. Promote your first admin: `update profiles set role = 'admin' where handle = '...';`
+3. Put `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (publishable key) in `.env`.
+   In *Authentication → URL Configuration* set the Site URL to where the app runs (e.g. `http://localhost:5173`)
+   and add it to Redirect URLs, so email-confirmation links come back to the app. For local development you can
+   instead turn off *Confirm email* under *Authentication → Sign In / Providers → Email*.
+4. Optional: run `supabase/seed.sql` in the SQL editor for a starter city (Amman — 13 reports, bids,
+   donations, success stories, and citizen / admin / contractor accounts; logins are listed at the top of
+   the file). Re-running it replaces the previous seed. Then add your photos to `supabase/seed-photos/`
+   (names in its README) and run `node scripts/upload-seed-photos.mjs` to upload them to storage.
+5. Promote your own admin: `update profiles set role = 'admin' where handle = '...';`
    Contractors sign up with the *Contractor / business* option and are verified by an admin
    (`verified = true`).
 
@@ -54,14 +59,15 @@ src/
   types.ts             domain model
   lib/ai.ts            Gemma prompts, OpenRouter/edge calls, fallback rules, auto-decision logic
   data/api.ts          the one data contract the UI uses
-  data/mock/           seeded demo city + in-browser implementation
   data/supabaseApi.ts  Supabase implementation
   data/hooks.ts        TanStack Query hooks
-  components/          ticket card, funding tape, stamps, AI slip, maps, sheets, sketches…
+  components/          ticket card, funding tape, stamps, AI slip, maps, sheets…
   pages/               Feed, Report, IssueDetail, Map, Stories, Profile, Admin, Contractor, SignIn
   style/               tokens → base → layout → components → pages (plain CSS, no framework)
 supabase/
-  migrations/0001_init.sql
+  migrations/          schema (0001_init.sql) + fixes (0002_fixes.sql)
+  seed.sql             starter data and accounts
+  seed-photos/         your images for the seed reports (uploaded by scripts/upload-seed-photos.mjs)
   functions/ai-screen/  Deno edge function
 ```
 

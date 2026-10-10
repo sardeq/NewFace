@@ -17,12 +17,10 @@ import type {
 } from '../types'
 
 /**
- * Single data contract the UI talks to. Two implementations:
- *  - MockApi      seeded, in-browser (localStorage) — works with zero setup
- *  - SupabaseApi  real tables / RLS / storage (supabase/migrations/0001_init.sql)
+ * Single data contract the UI talks to, implemented by SupabaseApi
+ * (real tables / RLS / storage — supabase/migrations/).
  */
 export interface Api {
-  readonly mode: 'mock' | 'supabase'
   setViewer(id: string | null): void
 
   // people

@@ -74,7 +74,7 @@ export interface CostAssessment {
   at: string
 }
 
-/** A photo reference: a URL / data URL, or a built-in field sketch `sketch:<kind>`. */
+/** A photo reference: a public storage URL, or a data URL before upload. */
 export type PhotoRef = string
 
 export interface Issue {

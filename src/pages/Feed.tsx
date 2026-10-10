@@ -8,7 +8,8 @@ import { useIssues, useStats, useStories } from '../data/hooks'
 import { useSession } from '../session/SessionContext'
 import { APP } from '../config'
 import { getPosition } from '../lib/geo'
-import { CATEGORIES, CATEGORY_META, fmtMoney, STATUS_META, ticketRef } from '../lib/format'
+import { CATEGORIES, categoryLabel, fmtMoney, STATUS_META, ticketRef } from '../lib/format'
+import { t, tn, useT } from '../i18n'
 import type { Category, FeedQuery, FeedSort, GeoPoint } from '../types'
 
 const SORTS: Array<{ value: FeedSort; label: string }> = [
@@ -36,6 +37,8 @@ export default function Feed() {
   const q = useMemo<FeedQuery>(() => ({ sort, status, category, near }), [sort, status, category, near])
   const { data, isLoading } = useIssues(q)
   const actions = useActions()
+  useT()
+  const sorts = SORTS.map((o) => ({ ...o, label: t(o.label) }))
 
   const pickSort = async (s: FeedSort) => {
     setSort(s)
@@ -43,7 +46,7 @@ export default function Feed() {
       try {
         setNear(await getPosition())
       } catch (e) {
-        toast(`${(e as Error).message} Using the city centre.`, 'err')
+        toast(`${t((e as Error).message)} ${t('Using the city centre.')}`, 'err')
         setNear(APP.defaultCenter)
       }
     }
@@ -53,29 +56,29 @@ export default function Feed() {
     <div className="page-grid">
       <section className="col-main">
         <header className="page-head">
-          <h1>What’s broken in {APP.city}</h1>
-          <p className="page-sub">Reported by neighbours, checked by the city, fixed together.</p>
+          <h1>{t('What’s broken in {city}', { city: t(APP.city) })}</h1>
+          <p className="page-sub">{t('Reported by neighbours, checked by the city, fixed together.')}</p>
         </header>
 
         <Composer />
 
         <div className="feed-controls">
-          <Segmented label="Sort feed" value={sort} options={SORTS} onChange={pickSort} />
+          <Segmented label={t('Sort feed')} value={sort} options={sorts} onChange={pickSort} />
           <div className="filter-row">
-            <div className="chip-row" role="group" aria-label="Status">
+            <div className="chip-row" role="group" aria-label={t('Status')}>
               {STATUS_FILTERS.map((f) => (
                 <button key={f.value} className={`chip ${status === f.value ? 'on' : ''}`} onClick={() => setStatus(f.value)}>
-                  {f.label}
+                  {t(f.label)}
                 </button>
               ))}
             </div>
             <label className="select-wrap">
               <Icon name="filter" size={14} />
-              <select value={category} onChange={(e) => setCategory(e.target.value as Category | 'all')} aria-label="Category">
-                <option value="all">All categories</option>
+              <select value={category} onChange={(e) => setCategory(e.target.value as Category | 'all')} aria-label={t('Category')}>
+                <option value="all">{t('All categories')}</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
-                    {CATEGORY_META[c].label}
+                    {categoryLabel(c)}
                   </option>
                 ))}
               </select>
@@ -86,10 +89,13 @@ export default function Feed() {
         <div className="feed">
           {isLoading && [0, 1, 2].map((n) => <Skeleton key={n} h={420} />)}
           {!isLoading && data?.length === 0 && (
-            <Empty title="Nothing on this page of the ledger">Try a different filter — or be the first to report something.</Empty>
+            <Empty title={t('Nothing on this page of the ledger')}>
+              {t('Try a different filter — or be the first to report something.')}
+            </Empty>
           )}
-          {data?.map((i) => (
-            <IssueCard key={i.id} issue={i} near={sort === 'near' ? near : null} onShare={actions.share} onDonate={actions.donate} />
+          {data?.map((i, n) => (
+            <IssueCard
+              index={n} key={i.id} issue={i} near={sort === 'near' ? near : null} onShare={actions.share} onDonate={actions.donate} />
           ))}
         </div>
       </section>
@@ -104,17 +110,18 @@ export default function Feed() {
 }
 
 function Composer() {
+  useT()
   const { user } = useSession()
   return (
     <Link to="/report" className="composer">
       <Avatar profile={user} size={36} />
-      <span className="composer-prompt">Something broken on your street?</span>
+      <span className="composer-prompt">{t('Something broken on your street?')}</span>
       <span className="composer-tools">
         <span className="composer-tool">
-          <Icon name="camera" size={18} /> Photo
+          <Icon name="camera" size={18} /> {t('Photo')}
         </span>
         <span className="composer-tool">
-          <Icon name="locate" size={18} /> GPS
+          <Icon name="locate" size={18} /> {t('GPS')}
         </span>
       </span>
     </Link>
@@ -122,27 +129,30 @@ function Composer() {
 }
 
 function CityPulse() {
+  useT()
   const { data: s } = useStats()
   const rows: Array<[string, string, string?]> = s
     ? [
-        ['Reports filed', String(s.reported)],
-        ['Fixed', String(s.resolved), 'moss'],
-        ['Raised by neighbours', fmtMoney(s.raised), 'signal'],
-        ['Open for funding', String(s.openForFunding)],
-        ['Avg. days to fix', `${s.avgDaysToFix}`],
+        [t('Reports filed'), String(s.reported)],
+        [t('Fixed'), String(s.resolved), 'moss'],
+        [t('Raised by neighbours'), fmtMoney(s.raised), 'signal'],
+        [t('Open for funding'), String(s.openForFunding)],
+        [t('Avg. days to fix'), `${s.avgDaysToFix}`],
       ]
     : []
   return (
     <section className="ledger-card">
       <header>
-        <span className="mono caps">City pulse</span>
-        <span className="mono muted">live</span>
+        <span className="mono caps">{t('City pulse')}</span>
+        <span className="mono muted live-tag">
+          <span className="live-dot" /> {t('live')}
+        </span>
       </header>
       <dl className="ledger-rows">
         {rows.map(([k, v, tone]) => (
           <div key={k}>
             <dt>{k}</dt>
-            <dd className={`num ${tone ? `t-${tone}` : ''}`}>{v}</dd>
+            <dd className={`num count-up ${tone ? `t-${tone}` : ''}`}>{v}</dd>
           </div>
         ))}
         {!s && <Skeleton h={150} />}
@@ -152,13 +162,14 @@ function CityPulse() {
 }
 
 function AlmostThere() {
+  useT()
   const { data = [] } = useIssues({ sort: 'funding', status: 'open_for_funding' })
   const actions = useActions()
   if (!data.length) return null
   return (
     <section className="ledger-card">
       <header>
-        <span className="mono caps">Almost there</span>
+        <span className="mono caps">{t('Almost there')}</span>
         <Icon name="coin" size={16} />
       </header>
       <ul className="mini-list">
@@ -169,7 +180,7 @@ function AlmostThere() {
             </Link>
             <FundingTape raised={i.raised} goal={i.estimatedCost} compact />
             <button className="link-btn" onClick={() => actions.donate(i)}>
-              Chip in →
+              {t('Chip in →')}
             </button>
           </li>
         ))}
@@ -179,6 +190,7 @@ function AlmostThere() {
 }
 
 function RecentlyMended() {
+  useT()
   const { data = [] } = useStories()
   const { data: issues = [] } = useIssues({ sort: 'new', status: 'resolved' })
   if (!data.length) return null
@@ -187,24 +199,25 @@ function RecentlyMended() {
   return (
     <section className="ledger-card mended-card">
       <header>
-        <span className="mono caps">Recently fixed</span>
+        <span className="mono caps">{t('Recently fixed')}</span>
         <Icon name="stitch" size={16} />
       </header>
       <Link to={`/stories/${s.id}`} className="mended-pair">
         <figure>
-          <Photo src={issue?.photos[0]} alt="Before" />
-          <figcaption className="mono caps">Before</figcaption>
+          <Photo src={issue?.photos[0]} alt={t('Before')} />
+          <figcaption className="mono caps">{t('Before')}</figcaption>
         </figure>
         <figure>
-          <Photo src={s.afterPhotos[0]} alt="After" />
-          <figcaption className="mono caps">After</figcaption>
+          <Photo src={s.afterPhotos[0]} alt={t('After')} />
+          <figcaption className="mono caps">{t('After')}</figcaption>
         </figure>
       </Link>
       <p className="mended-text">
-        <strong>{issue?.title}</strong> — fixed in {s.daysToFix} days for {fmtMoney(s.finalCost)}.
+        <strong>{issue?.title}</strong> —{' '}
+        {t('fixed in {days} for {amount}.', { days: tn(s.daysToFix, 'day'), amount: fmtMoney(s.finalCost) })}
       </p>
       <Link to="/stories" className="link-btn">
-        All success stories →
+        {t('All success stories →')}
       </Link>
     </section>
   )

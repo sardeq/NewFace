@@ -6,8 +6,10 @@ import { useSession } from '../session/SessionContext'
 import { CATEGORY_META, distanceKm, fmtCompact, fmtCoord, fmtDistance, ticketRef, timeAgo } from '../lib/format'
 import type { GeoPoint, Issue } from '../types'
 import { toast } from './ui'
+import { t, useT } from '../i18n'
 
 export function VoteRail({ issue, vertical = true }: { issue: Issue; vertical?: boolean }) {
+  useT()
   const { user } = useSession()
   const vote = useVote()
   const score = issue.upvotes - issue.downvotes
@@ -19,7 +21,7 @@ export function VoteRail({ issue, vertical = true }: { issue: Issue; vertical?: 
     vote.mutate({ id: issue.id, value: issue.myVote === v ? 0 : v })
   }
   return (
-    <div className={`vote ${vertical ? 'is-vertical' : ''}`} aria-label="Urgency votes">
+    <div className={`vote ${vertical ? 'is-vertical' : ''}`} aria-label={t('Urgency votes')}>
       <button
         className={`vote-btn up ${issue.myVote === 1 ? 'on' : ''}`}
         onClick={(e) => {
@@ -27,11 +29,15 @@ export function VoteRail({ issue, vertical = true }: { issue: Issue; vertical?: 
           cast(1)
         }}
         aria-pressed={issue.myVote === 1}
-        aria-label="Upvote — this is urgent"
+        aria-label={t('Upvote — this is urgent')}
       >
         <Icon name="up" size={18} />
       </button>
-      <span className="vote-score num" title={`${issue.upvotes} up · ${issue.downvotes} down`}>
+      <span
+        key={score}
+        className="vote-score num"
+        title={t('{up} up · {down} down', { up: issue.upvotes, down: issue.downvotes })}
+      >
         {fmtCompact(score)}
       </span>
       <button
@@ -41,7 +47,7 @@ export function VoteRail({ issue, vertical = true }: { issue: Issue; vertical?: 
           cast(-1)
         }}
         aria-pressed={issue.myVote === -1}
-        aria-label="Downvote — not urgent"
+        aria-label={t('Downvote — not urgent')}
       >
         <Icon name="down" size={18} />
       </button>
@@ -54,12 +60,15 @@ export function IssueCard({
   near,
   onShare,
   onDonate,
+  index = 0,
 }: {
+  index?: number
   issue: Issue
   near?: GeoPoint | null
   onShare: (i: Issue) => void
   onDonate: (i: Issue) => void
 }) {
+  useT()
   const { byId } = useProfiles()
   const nav = useNavigate()
   const author = byId.get(issue.authorId)
@@ -67,7 +76,7 @@ export function IssueCard({
   const href = `/issue/${issue.id}`
 
   return (
-    <article className="ticket" onClick={() => nav(href)}>
+    <article className="ticket" onClick={() => nav(href)} style={{ ['--i' as string]: Math.min(index, 8) }}>
       <div className="ticket-stub">
         <VoteRail issue={issue} />
       </div>
@@ -100,8 +109,8 @@ export function IssueCard({
             {issue.photos.length > 1 && <span className="snap-count">+{issue.photos.length - 1}</span>}
           </figcaption>
           {issue.verifiedBy === 'ai' && (
-            <span className="snap-badge mono" title="Auto-verified by Gemma">
-              <Icon name="scan" size={12} /> AI-verified
+            <span className="snap-badge mono" title={t('Auto-verified by Gemma')}>
+              <Icon name="scan" size={12} /> {t('AI-verified')}
             </span>
           )}
         </figure>
@@ -113,7 +122,7 @@ export function IssueCard({
         <footer className="ticket-actions" onClick={(e) => e.stopPropagation()}>
           <span className="ticket-author">
             <Avatar profile={author} size={22} />
-            <span>{author?.name ?? 'Citizen'}</span>
+            <span>{author?.name ?? t('Citizen')}</span>
           </span>
           <Urgency level={issue.severity} label={false} />
           <span className="spacer" />
@@ -123,18 +132,18 @@ export function IssueCard({
           </Link>
           <button className="act" onClick={() => onShare(issue)}>
             <Icon name="share" size={16} />
-            <span>Share</span>
+            <span>{t('Share')}</span>
           </button>
           {canFund && (
             <button className="act act-fund" onClick={() => onDonate(issue)}>
               <Icon name="coin" size={16} />
-              <span>Chip in</span>
+              <span>{t('Chip in')}</span>
             </button>
           )}
           {issue.storyId && (
             <Link to={`/stories/${issue.storyId}`} className="act act-story">
               <Icon name="stitch" size={16} />
-              <span>Story</span>
+              <span>{t('Story')}</span>
             </Link>
           )}
         </footer>

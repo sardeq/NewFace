@@ -45,7 +45,11 @@ const P: Record<string, string> = {
   filter: 'M4 5.5h16l-6 7.5v5.5l-4 2V13L4 5.5Z',
   eye: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Zm9.5 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
   trash: 'M5 7h14M10 4.5h4M7 7l1 12.5h8L17 7',
+  globe: 'M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17ZM3.5 12h17M12 3.5c2.3 2.3 3.5 5.2 3.5 8.5s-1.2 6.2-3.5 8.5c-2.3-2.3-3.5-5.2-3.5-8.5s1.2-6.2 3.5-8.5Z',
 }
+
+/** Icons that point somewhere — mirrored in right-to-left layouts. */
+const DIRECTIONAL = new Set(['left', 'right', 'arrowRight', 'logout', 'send', 'stories', 'external'])
 
 export type IconName = keyof typeof P
 
@@ -53,6 +57,7 @@ export function Icon({
   name,
   size = 18,
   stroke = 1.75,
+  className = '',
   ...rest
 }: { name: IconName; size?: number; stroke?: number } & Omit<SVGProps<SVGSVGElement>, 'name' | 'stroke'>) {
   const filled = name === 'up' || name === 'down'
@@ -67,9 +72,10 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={`ico ico-${name} ${DIRECTIONAL.has(name) ? 'ico-dir' : ''} ${className}`}
       {...rest}
     >
-      <path d={P[name]} fill={filled ? 'var(--icon-fill, none)' : 'none'} />
+      <path d={P[name]} pathLength={1} fill={filled ? 'var(--icon-fill, none)' : 'none'} />
     </svg>
   )
 }
@@ -80,13 +86,20 @@ const BUMP = 'M3 23.5c5 0 6-13 13-13s8 13 13 13Z'
 export function Logo({ size = 30 }: { size?: number }) {
   const clip = `bump${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="logo">
       <rect width="32" height="32" rx="8" fill="var(--ink)" />
       <clipPath id={clip}>
         <path d={BUMP} />
       </clipPath>
       <path d={BUMP} fill="var(--signal)" />
-      <path d="M7.5 27 12.5 9M14.5 27l5-18M21.5 27l5-18" stroke="var(--ink)" strokeWidth="2.8" clipPath={`url(#${clip})`} />
+      <g clipPath={`url(#${clip})`}>
+        <path
+          className="logo-stripes"
+          d="M-6.5 27l5-18M0.5 27l5-18M7.5 27 12.5 9M14.5 27l5-18M21.5 27l5-18M28.5 27l5-18"
+          stroke="var(--ink)"
+          strokeWidth="2.8"
+        />
+      </g>
       <path d="M3 23.5h26" stroke="var(--signal)" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )

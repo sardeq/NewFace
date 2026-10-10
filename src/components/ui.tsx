@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon, type IconName } from './Icon'
-import { fmtMoney, pct, STATUS_META } from '../lib/format'
+import { fmtMoney, pct, statusLabel, statusShort, STATUS_META } from '../lib/format'
+import { t, tn, useT } from '../i18n'
 import type { IssueStatus, Profile } from '../types'
 
 /* ───────── Photo: an uploaded image, or a plain tile if it's missing ───────── */
 export function Photo({ src, alt, className = '' }: { src?: string; alt: string; className?: string }) {
   if (!src || !/^(https?:|data:image\/|blob:)/.test(src))
     return (
-      <span className={`photo-missing ${className}`} role="img" aria-label={alt || 'No photo'}>
+      <span className={`photo-missing ${className}`} role="img" aria-label={alt || t('No photo')}>
         <Icon name="camera" size={22} />
       </span>
     )
@@ -38,12 +39,18 @@ export function Avatar({ profile, size = 32 }: { profile?: Profile | null; size?
 
 /* ───────── Rubber-stamp status ───────── */
 export function Stamp({ status, small }: { status: IssueStatus; small?: boolean }) {
+  useT()
   const m = STATUS_META[status]
-  return <span className={`stamp tone-${m.tone} ${small ? 'stamp-sm' : ''}`}>{small ? m.short : m.label}</span>
+  return (
+    <span key={status} className={`stamp tone-${m.tone} ${small ? 'stamp-sm' : ''}`}>
+      {small ? statusShort(status) : statusLabel(status)}
+    </span>
+  )
 }
 
 /* ───────── Funding tape: a tape-measure that fills ───────── */
 export function FundingTape({ raised, goal, donors, compact }: { raised: number; goal: number | null; donors?: number; compact?: boolean }) {
+  useT()
   const p = pct(raised, goal)
   const done = goal !== null && raised >= goal
   return (
@@ -51,18 +58,18 @@ export function FundingTape({ raised, goal, donors, compact }: { raised: number;
       <div className="tape-head">
         <span className="tape-raised num">{fmtMoney(raised)}</span>
         <span className="tape-goal mono">
-          {goal ? <>of {fmtMoney(goal)}</> : 'awaiting estimate'}
+          {goal ? t('of {amount}', { amount: fmtMoney(goal) }) : t('awaiting estimate')}
         </span>
-        <span className="tape-pct mono num">{done ? 'FUNDED' : `${p}%`}</span>
+        <span className="tape-pct mono num">{done ? t('FUNDED') : `${p}%`}</span>
       </div>
-      <div className="tape-track" role="progressbar" aria-valuenow={p} aria-valuemin={0} aria-valuemax={100} aria-label="Funding progress">
+      <div className="tape-track" role="progressbar" aria-valuenow={p} aria-valuemin={0} aria-valuemax={100} aria-label={t('Funding progress')}>
         <div className="tape-fill" style={{ width: `${p}%` }} />
         <div className="tape-ticks" />
       </div>
       {!compact && donors !== undefined && (
         <div className="tape-foot mono">
-          {donors} {donors === 1 ? 'neighbour' : 'neighbours'} chipped in
-          {goal && !done ? <> · {fmtMoney(Math.max(0, goal - raised))} to go</> : null}
+          {t('{who} chipped in', { who: tn(donors, 'neighbour') })}
+          {goal && !done ? <> · {t('{amount} to go', { amount: fmtMoney(Math.max(0, goal - raised)) })}</> : null}
         </div>
       )}
     </div>
@@ -71,14 +78,15 @@ export function FundingTape({ raised, goal, donors, compact }: { raised: number;
 
 /* ───────── Urgency meter (severity 1–5) ───────── */
 export function Urgency({ level, label = true }: { level: number; label?: boolean }) {
+  useT()
   return (
-    <span className="urgency" title={`Urgency ${level} of 5`}>
+    <span className="urgency" title={t('Urgency {n} of 5', { n: level })}>
       <span className="urgency-bars" aria-hidden>
         {[1, 2, 3, 4, 5].map((n) => (
           <i key={n} className={n <= level ? 'on' : ''} style={{ height: 4 + n * 2.2 }} />
         ))}
       </span>
-      {label && <span className="mono caps">Urgency {level}/5</span>}
+      {label && <span className="mono caps">{t('Urgency {n}/5', { n: level })}</span>}
     </span>
   )
 }
@@ -152,7 +160,7 @@ export function Sheet({
             {kicker && <div className="mono caps muted">{kicker}</div>}
             <h2>{title}</h2>
           </div>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">
+          <button className="icon-btn sheet-x" onClick={onClose} aria-label={t('Close')}>
             <Icon name="x" />
           </button>
         </header>
@@ -168,7 +176,8 @@ export function Sheet({
 type Toast = { id: number; text: string; tone: 'ok' | 'err' }
 let push: ((t: Omit<Toast, 'id'>) => void) | null = null
 // eslint-disable-next-line react-refresh/only-export-components
-export const toast = (text: string, tone: Toast['tone'] = 'ok') => push?.({ text, tone })
+/** Messages are translated here, so callers pass the English text (dynamic error text passes through as-is). */
+export const toast = (text: string, tone: Toast['tone'] = 'ok') => push?.({ text: t(text), tone })
 
 export function Toaster() {
   const [items, setItems] = useState<Toast[]>([])
@@ -184,10 +193,10 @@ export function Toaster() {
   }, [])
   return (
     <div className="toaster" aria-live="polite">
-      {items.map((t) => (
-        <div key={t.id} className={`toast toast-${t.tone}`}>
-          <Icon name={t.tone === 'ok' ? 'check' : 'alert'} size={16} />
-          {t.text}
+      {items.map((x) => (
+        <div key={x.id} className={`toast toast-${x.tone}`}>
+          <Icon name={x.tone === 'ok' ? 'check' : 'alert'} size={16} />
+          {x.text}
         </div>
       ))}
     </div>
@@ -263,7 +272,11 @@ export function Segmented<T extends string>({
         >
           {o.icon && <Icon name={o.icon} size={15} />}
           {o.label}
-          {o.count !== undefined && <span className="seg-count num">{o.count}</span>}
+          {o.count !== undefined && (
+            <span className="seg-count num" key={o.count}>
+              {o.count}
+            </span>
+          )}
         </button>
       ))}
     </div>

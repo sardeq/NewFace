@@ -161,5 +161,78 @@ p > svg,
 .ticket-meta svg {
   display: inline-block;
   vertical-align: -2px;
-  margin-right: 4px;
+  margin-inline-end: 4px;
+}
+
+/* ───────── Language + motion ───────── */
+html[dir='rtl'] body { font-family: 'IBM Plex Sans Arabic', 'Public Sans', system-ui, sans-serif; }
+html[dir='rtl'] .icon-arrow, html[dir='rtl'] [data-flip-rtl] { transform: scaleX(-1); }
+
+/* Page transitions: each route slides + fades in */
+.page-enter { animation: page-in 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.page-enter > * > * { animation: stagger-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.page-enter > * > *:nth-child(2) { animation-delay: 0.05s; }
+.page-enter > * > *:nth-child(3) { animation-delay: 0.1s; }
+.page-enter > * > *:nth-child(4) { animation-delay: 0.15s; }
+.page-enter > * > *:nth-child(n + 5) { animation-delay: 0.2s; }
+@keyframes stagger-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Animated nav icons: bounce when the tab becomes active, wiggle on hover */
+.rail-link svg, .tab svg { transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.rail-link:hover svg, .tab:hover svg { transform: translateY(-2px) rotate(-6deg); }
+.rail-link.active svg, .tab.active svg { animation: icon-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes icon-pop {
+  0% { transform: scale(0.6) rotate(-15deg); }
+  60% { transform: scale(1.2) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.tab-report svg, .rail-report svg { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.tab-report:hover svg, .rail-report:hover svg { transform: rotate(90deg) scale(1.1); }
+
+/* Press feedback */
+.btn, .icon-btn, .chip, .act, .tab, .rail-link, .lang-toggle { transition: transform 0.15s ease, background-color 0.2s, color 0.2s, box-shadow 0.2s; }
+.btn:active, .icon-btn:active, .chip:active, .act:active, .lang-toggle:active { transform: scale(0.95); }
+
+/* Ripples */
+.ripple-layer { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.ripple {
+  position: absolute; border-radius: 50%; background: currentColor; opacity: 0.18;
+  transform: scale(0); animation: ripple 0.6s ease-out forwards; pointer-events: none;
+}
+@keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+/* Language toggle */
+.lang-toggle {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px;
+  border-radius: 999px; border: 1px solid var(--line, rgba(0,0,0,.12)); background: var(--surface, transparent);
+  color: inherit; cursor: pointer; font: 600 13px/1 'Public Sans', system-ui, sans-serif;
+}
+.lang-toggle:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.lang-globe { animation: globe-spin 0.7s cubic-bezier(0.65, 0, 0.35, 1); }
+@keyframes globe-spin { from { transform: rotate(-360deg) scale(0.7); } to { transform: none; } }
+.lang-flap { position: relative; display: inline-block; width: 1.6em; height: 1.2em; perspective: 200px; }
+.lang-face {
+  position: absolute; inset: 0; display: grid; place-items: center; backface-visibility: hidden;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+}
+.lang-face-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 15px; transform: rotateX(-180deg); opacity: 0; }
+/* shows the language you'd switch TO */
+.lang-toggle[data-lang='en'] .lang-face-en { transform: rotateX(180deg); opacity: 0; }
+.lang-toggle[data-lang='en'] .lang-face-ar { transform: none; opacity: 1; }
+
+/* Language switch transitions */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.lang-fading body { opacity: 0; transition: opacity 0.16s; }
+html.lang-arriving body { animation: page-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* Modals / sheets pop */
+dialog[open], .sheet { animation: sheet-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes sheet-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

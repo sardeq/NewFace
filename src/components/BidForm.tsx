@@ -6,9 +6,11 @@ import { api } from '../data'
 import { useSession } from '../session/SessionContext'
 import { screenBid } from '../lib/ai'
 import { APP } from '../config'
+import { t, useT } from '../i18n'
 import type { Bid, Issue } from '../types'
 
 export function BidForm({ issue, onDone }: { issue: Issue; onDone?: (b: Bid) => void }) {
+  useT()
   const { user } = useSession()
   const submit = useSubmitBid()
   const [amount, setAmount] = useState(String(issue.estimatedCost ?? issue.ai?.costRange[1] ?? ''))
@@ -45,13 +47,13 @@ export function BidForm({ issue, onDone }: { issue: Issue; onDone?: (b: Bid) => 
       <div className="bid-done">
         {done.status === 'approved' ? (
           <p>
-            <strong>Work authorised.</strong> Gemma approved your bid automatically
-            {done.authorization ? ` — authorisation ${done.authorization}` : ''}. You may begin physical work.
+            <strong>{t('Work authorised.')}</strong> {t('Gemma approved your bid automatically')}
+            {done.authorization ? ` — ${t('authorisation {code}', { code: done.authorization })}` : ''}. {t('You may begin physical work.')}
           </p>
         ) : (
           <p>
-            <strong>Bid filed.</strong> The municipal desk will review it — you’ll get a dispatch the moment it’s approved and
-            you’re authorised to start.
+            <strong>{t('Bid filed.')}</strong>{' '}
+            {t('The municipal desk will review it — you’ll get a dispatch the moment it’s approved and you’re authorised to start.')}
           </p>
         )}
         {done.ai && <AiSlip a={done.ai} heading="Gemma bid review" compact />}
@@ -61,21 +63,24 @@ export function BidForm({ issue, onDone }: { issue: Issue; onDone?: (b: Bid) => 
   return (
     <div className="bid-form">
       <div className="bid-grid">
-        <Field label={`Price · ${APP.currency}`} hint={issue.estimatedCost ? `Official estimate ${issue.estimatedCost}` : undefined}>
+        <Field
+          label={`${t('Price')} · ${t(APP.currency)}`}
+          hint={issue.estimatedCost ? t('Official estimate {amount}', { amount: issue.estimatedCost }) : undefined}
+        >
           <input className="input num" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))} />
         </Field>
-        <Field label="Working days">
+        <Field label={t('Working days')}>
           <input className="input num" inputMode="numeric" value={days} onChange={(e) => setDays(e.target.value.replace(/\D/g, ''))} />
         </Field>
       </div>
-      <Field label="Method statement" hint="Materials, crew, traffic management, and when you can start.">
+      <Field label={t('Method statement')} hint={t('Materials, crew, traffic management, and when you can start.')}>
         <textarea className="input textarea" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
       </Field>
       {!user?.verified && (
-        <p className="note-warn small">Your company isn’t verified yet — bids from unverified contractors are scored lower.</p>
+        <p className="note-warn small">{t('Your company isn’t verified yet — bids from unverified contractors are scored lower.')}</p>
       )}
       <Button variant="ink" icon="hammer" disabled={!valid} loading={phase === 'screening'} onClick={send}>
-        {phase === 'screening' ? 'Gemma is reviewing…' : 'Submit bid'}
+        {phase === 'screening' ? t('Gemma is reviewing…') : t('Submit bid')}
       </Button>
     </div>
   )

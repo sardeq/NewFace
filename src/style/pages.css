@@ -92,7 +92,7 @@
 }
 .mended-pair figcaption {
   position: absolute;
-  left: 5px;
+  inset-inline-start: 5px;
   bottom: 5px;
   font-size: 12px;
   padding: 2px 5px;
@@ -121,11 +121,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 10px 12px 0;
+  padding-block: 12px 12px;
+  padding-inline: 0 10px;
   font-weight: 650;
   font-size: 14px;
   color: var(--ink-4);
-  text-align: left;
+  text-align: start;
   border-top: 3px solid transparent;
   margin-top: -2px;
 }
@@ -242,7 +243,7 @@
 .thumb-x {
   position: absolute;
   top: 5px;
-  right: 5px;
+  inset-inline-end: 5px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -253,7 +254,7 @@
 }
 .thumb-cover {
   position: absolute;
-  left: 5px;
+  inset-inline-start: 5px;
   bottom: 5px;
   font-size: 12px;
   padding: 2px 5px;
@@ -343,8 +344,8 @@
 }
 .scan-bar {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   height: 3px;
   background: var(--signal);
   box-shadow: 0 0 14px 3px rgba(242, 194, 48, 0.45);
@@ -578,7 +579,7 @@
   margin-bottom: 2px;
 }
 .comment-head time {
-  margin-left: 8px;
+  margin-inline-start: 8px;
   font-size: 12px;
 }
 .comment p {
@@ -586,8 +587,8 @@
 }
 .comment.is-official {
   background: var(--sky-wash);
-  padding-left: 10px;
-  border-left: 3px solid var(--sky);
+  padding-inline-start: 10px;
+  border-inline-start: 3px solid var(--sky);
 }
 .comment.is-official .badge {
   background: var(--sky);
@@ -625,7 +626,7 @@
 }
 .map-legend {
   position: absolute;
-  left: 14px;
+  inset-inline-start: 14px;
   bottom: 14px;
   z-index: 500;
   display: grid;
@@ -646,7 +647,7 @@
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  text-align: left;
+  text-align: start;
 }
 .legend-item i {
   width: 12px;
@@ -661,7 +662,7 @@
 .map-card {
   position: absolute;
   top: 14px;
-  right: 14px;
+  inset-inline-end: 14px;
   z-index: 500;
   width: 300px;
   background: var(--paper-hi);
@@ -674,7 +675,7 @@
 .map-card-x {
   position: absolute;
   top: 6px;
-  right: 6px;
+  inset-inline-end: 6px;
   z-index: 2;
   background: var(--paper-hi);
 }
@@ -696,7 +697,7 @@
   width: 100%;
 }
 .mappage-list {
-  border-left: 1px solid var(--rule);
+  border-inline-start: 1px solid var(--rule);
   overflow: auto;
 }
 .mappage-list ul {
@@ -711,7 +712,7 @@
   gap: 10px;
   align-items: center;
   padding: 11px 14px;
-  text-align: left;
+  text-align: start;
   border-bottom: 1px solid var(--rule);
 }
 .maplist-row:hover,
@@ -906,7 +907,7 @@
   font-size: 14px;
 }
 .txn th {
-  text-align: left;
+  text-align: start;
   font-size: 12px;
   color: var(--ink-3);
   padding: 10px 12px;
@@ -918,7 +919,7 @@
 }
 .txn td.num,
 .txn th.num {
-  text-align: right;
+  text-align: end;
   font-weight: 650;
 }
 .txn tfoot td {
@@ -959,7 +960,7 @@
   grid-template-columns: 64px 1fr;
   gap: 12px;
   padding: 12px;
-  text-align: left;
+  text-align: start;
   border-bottom: 1px solid var(--rule);
 }
 .docket-row:hover {
@@ -1043,8 +1044,9 @@
 }
 .casefile-quote {
   margin: 0;
-  padding: 4px 0 4px 16px;
-  border-left: 3px solid var(--accent);
+  padding-block: 4px 4px;
+  padding-inline: 16px 0;
+  border-inline-start: 3px solid var(--accent);
   font-size: 16px;
   line-height: 1.6;
   color: var(--ink-2);
@@ -1060,7 +1062,7 @@
 }
 .panel legend {
   padding: 0 8px;
-  margin-left: -8px;
+  margin-inline-start: -8px;
   font-size: 13px;
   color: var(--accent);
   font-weight: 700;
@@ -1120,8 +1122,8 @@
   top: 0;
   bottom: 0;
   background: var(--moss-wash);
-  border-left: 1.5px solid var(--moss);
-  border-right: 1.5px solid var(--moss);
+  border-inline-start: 1.5px solid var(--moss);
+  border-inline-end: 1.5px solid var(--moss);
 }
 .rg-mark {
   position: absolute;
@@ -1171,7 +1173,7 @@
 }
 .after-grid figcaption {
   position: absolute;
-  left: 5px;
+  inset-inline-start: 5px;
   bottom: 5px;
   font-size: 12px;
   padding: 2px 5px;
@@ -1218,7 +1220,7 @@
 .bid-ribbon {
   position: absolute;
   top: -10px;
-  right: 14px;
+  inset-inline-end: 14px;
   padding: 3px 8px;
   background: var(--moss);
   color: var(--paper-hi);
@@ -1477,7 +1479,7 @@
   display: grid;
   gap: 2px;
   padding: 10px 12px;
-  text-align: left;
+  text-align: start;
   border: 1.5px solid var(--rule-2);
   border-radius: var(--r-1);
   background: var(--paper-hi);
@@ -1536,7 +1538,7 @@
 .receipt-rows {
   margin: 14px 0 6px;
   display: grid;
-  text-align: left;
+  text-align: start;
   font-size: 12px;
   border-top: 1.5px dashed var(--ink-4);
   padding-top: 10px;
@@ -1552,7 +1554,7 @@
 }
 .receipt-rows dd {
   margin: 0;
-  text-align: right;
+  text-align: end;
 }
 .clip {
   max-width: 230px;
@@ -1574,7 +1576,8 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 6px 6px 6px 12px;
+  padding-block: 6px 6px;
+  padding-inline: 12px 6px;
   background: var(--paper-hi);
   border: 1.5px solid var(--rule-2);
   border-radius: var(--r-1);
@@ -1625,7 +1628,7 @@
   align-items: center;
   padding: 7px 8px;
   border-radius: var(--r-1);
-  text-align: left;
+  text-align: start;
 }
 .person > span {
   display: grid;
@@ -1681,7 +1684,7 @@
 .form-error {
   margin: 0;
   padding: 10px 12px;
-  border-left: 3px solid var(--signal-deep);
+  border-inline-start: 3px solid var(--signal-deep);
   border-radius: var(--r-1);
   background: var(--alert-wash);
   color: var(--signal-deep);
@@ -1718,7 +1721,7 @@ code {
     height: auto;
   }
   .mappage-list {
-    border-left: 0;
+    border-inline-start: 0;
     border-top: 1px solid var(--rule);
     max-height: 50vh;
   }
@@ -1781,8 +1784,8 @@ code {
   }
   .r-step,
   .r-nav {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-inline-start: 16px;
+    padding-inline-end: 16px;
   }
   .capture-row {
     grid-template-columns: 1fr 1fr;

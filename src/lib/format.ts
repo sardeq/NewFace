@@ -1,4 +1,5 @@
 import { APP } from '../config'
+import { getLang, locale, t } from '../i18n'
 import type { Category, IssueStatus, Role } from '../types'
 
 export const STATUS_META: Record<
@@ -34,6 +35,12 @@ export const CATEGORY_META: Record<Category, { label: string; code: string }> = 
 
 export const CATEGORIES = Object.keys(CATEGORY_META) as Category[]
 
+/* Translated labels — call these at render time so they follow the current language. */
+export const statusLabel = (s: IssueStatus) => t(STATUS_META[s].label)
+export const statusShort = (s: IssueStatus) => t(STATUS_META[s].short)
+export const categoryLabel = (c: Category) => t(CATEGORY_META[c].label)
+export const roleLabel = (r: Role) => t(ROLE_LABEL[r])
+
 export const ROLE_LABEL: Record<Role, string> = {
   citizen: 'Citizen',
   admin: 'Municipal desk',
@@ -42,30 +49,35 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 export const ticketRef = (ref: number) => `MT-${String(ref).padStart(4, '0')}`
 
-const money = new Intl.NumberFormat('en-JO', { maximumFractionDigits: 0 })
+const num = (n: number) => new Intl.NumberFormat(locale(), { maximumFractionDigits: 0 }).format(Math.round(n))
+/** "JOD 25" in English, "25 د.أ" in Arabic. */
 export const fmtMoney = (n: number, withCurrency = true) =>
-  withCurrency ? `${APP.currency} ${money.format(Math.round(n))}` : money.format(Math.round(n))
+  !withCurrency ? num(n) : getLang() === 'ar' ? `${num(n)} ${t(APP.currency)}` : `${APP.currency} ${num(n)}`
 
 export const fmtCompact = (n: number) =>
-  new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
+  new Intl.NumberFormat(locale(), { notation: 'compact', maximumFractionDigits: 1 }).format(n)
 
 export function timeAgo(iso: string, now = Date.now()) {
+  const ar = getLang() === 'ar'
   const s = Math.max(1, Math.round((now - new Date(iso).getTime()) / 1000))
-  if (s < 60) return `${s}s`
+  if (s < 60) return ar ? `${s} ث` : `${s}s`
   const m = Math.round(s / 60)
-  if (m < 60) return `${m}m`
+  if (m < 60) return ar ? `${m} د` : `${m}m`
   const h = Math.round(m / 60)
-  if (h < 24) return `${h}h`
+  if (h < 24) return ar ? `${h} س` : `${h}h`
   const d = Math.round(h / 24)
-  if (d < 30) return `${d}d`
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  if (d < 30) return ar ? `${d} ي` : `${d}d`
+  return new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
+/** "5m ago" / "منذ 5 د" */
+export const timeAgoLong = (iso: string) => t('{time} ago', { time: timeAgo(iso) })
+
 export const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  new Date(iso).toLocaleDateString(locale(), { day: '2-digit', month: 'short', year: 'numeric' })
 
 export const fmtDateTime = (iso: string) =>
-  new Date(iso).toLocaleString('en-GB', {
+  new Date(iso).toLocaleString(locale(), {
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
@@ -88,7 +100,8 @@ export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; ln
   return 2 * R * Math.asin(Math.sqrt(h))
 }
 
-export const fmtDistance = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`)
+export const fmtDistance = (km: number) =>
+  km < 1 ? `${Math.round(km * 1000)} ${t('m')}` : `${km.toFixed(1)} ${t('km')}`
 
 export const uid = (prefix = '') =>
   `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`

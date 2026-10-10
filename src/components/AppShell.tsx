@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { Icon, Logo, type IconName } from './Icon'
-import { Avatar, Toaster } from './ui'
+import { Avatar, Skeleton, Toaster } from './ui'
+import { LangToggle } from './LangToggle'
 import { ActionsProvider } from './Actions'
 import { useMarkRead, useNotifications } from '../data/hooks'
 import { useSession } from '../session/SessionContext'
 import { APP } from '../config'
 import { aiModeLabel } from '../lib/ai'
-import { ROLE_LABEL, timeAgo } from '../lib/format'
+import { roleLabel, timeAgo } from '../lib/format'
+import { locale, t, useT } from '../i18n'
 import type { Role } from '../types'
 
 interface NavItem {
@@ -29,11 +31,12 @@ const NAV: NavItem[] = [
 
 const editionLine = () => {
   const d = new Date()
-  const day = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
-  return `${day} · ${APP.city}`
+  const day = d.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' })
+  return `${day} · ${t(APP.city)}`
 }
 
 export function AppShell() {
+  const t = useT()
   const { user } = useSession()
   const nav = NAV.filter((n) => !n.roles || (user && n.roles.includes(user.role)))
   const loc = useLocation()
@@ -57,39 +60,47 @@ export function AppShell() {
               <li key={n.to}>
                 <NavLink to={n.to} end={n.end} className="rail-link">
                   <Icon name={n.icon} size={20} />
-                  <span>{n.label}</span>
+                  <span>{t(n.label)}</span>
                 </NavLink>
               </li>
             ))}
           </ul>
           <Link to="/report" className="rail-report">
             <Icon name="plus" size={20} stroke={2.2} />
-            <span>Report damage</span>
+            <span>{t('Report damage')}</span>
           </Link>
           <div className="rail-foot mono">
             <div>
               <Icon name="scan" size={13} /> {aiModeLabel()}
             </div>
-            <div>Supabase · live</div>
+            <div>
+              <span className="live-dot" /> Supabase · {t('live')}
+            </div>
           </div>
         </nav>
         <main className="stage">
-          <Outlet />
+          {/* Keyed by path: each route mounts fresh and plays the page-enter animation. */}
+          <div className="route-line" key={`line-${loc.pathname}`} aria-hidden="true" />
+          <div className="page-enter" key={loc.pathname}>
+            <Suspense fallback={<Skeleton h={480} />}>
+              <Outlet />
+            </Suspense>
+          </div>
         </main>
         <nav className="tabbar" aria-label="Main">
           {mobileLeft.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end} className="tab">
               <Icon name={n.icon} size={21} />
-              <span>{n.label}</span>
+              <span>{t(n.label)}</span>
             </NavLink>
           ))}
-          <NavLink to="/report" className="tab tab-report" aria-label="Report damage">
+          <NavLink to="/report" className="tab tab-report" aria-label={t('Report damage')}>
             <Icon name="plus" size={24} stroke={2.4} />
           </NavLink>
           {mobileRight.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end} className="tab">
               <Icon name={n.icon} size={21} />
-              <span>{n.label}</span>
+              <span>{t(n.label)}</span>
             </NavLink>
           ))}
         </nav>
@@ -100,10 +111,11 @@ export function AppShell() {
 }
 
 function Masthead() {
+  const t = useT()
   const { user } = useSession()
   return (
     <header className="masthead">
-      <Link to="/" className="brand" aria-label={`${APP.name} home`}>
+      <Link to="/" className="brand" aria-label={t('{name} home', { name: APP.name })}>
         <Logo size={30} />
         <span className="brand-word">{APP.name}</span>
         <span className="brand-ar" lang="ar" dir="rtl">{APP.nameAr}</span>
@@ -114,8 +126,9 @@ function Masthead() {
       <div className="mast-actions">
         <Link to="/report" className="btn btn-primary btn-sm mast-report">
           <Icon name="camera" size={16} />
-          <span>Report</span>
+          <span>{t('Report')}</span>
         </Link>
+        <LangToggle />
         {user && <Bell />}
         <PersonaMenu />
       </div>
@@ -124,6 +137,7 @@ function Masthead() {
 }
 
 function Bell() {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const { data = [] } = useNotifications(true)
   const markRead = useMarkRead()
@@ -134,24 +148,28 @@ function Bell() {
     <div className="pop-anchor" ref={ref}>
       <button
         className="icon-btn bell"
-        aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`}
+        aria-label={unread ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
         onClick={() => {
           setOpen((o) => !o)
           if (!open && unread) setTimeout(() => markRead.mutate(), 1500)
         }}
       >
         <Icon name="bell" size={20} />
-        {unread > 0 && <span className="bell-dot num">{unread}</span>}
+        {unread > 0 && (
+          <span className="bell-dot num" key={unread}>
+            {unread}
+          </span>
+        )}
       </button>
       {open && (
         <div className="pop notif-pop">
           <div className="pop-head">
-            <strong>Dispatches</strong>
-            <span className="mono muted">{data.length} total</span>
+            <strong>{t('Dispatches')}</strong>
+            <span className="mono muted">{t('{n} total', { n: data.length })}</span>
           </div>
           <div className="stitch-rule" />
           {data.length === 0 ? (
-            <p className="muted pad">Nothing yet. Report or fund an issue and updates land here.</p>
+            <p className="muted pad">{t('Nothing yet. Report or fund an issue and updates land here.')}</p>
           ) : (
             <ul className="notif-list">
               {data.slice(0, 12).map((n) => (
@@ -200,13 +218,14 @@ function Bell() {
 }
 
 function PersonaMenu() {
+  const t = useT()
   const { user, signOut } = useSession()
   const [open, setOpen] = useState(false)
   const ref = useOutsideClose<HTMLDivElement>(open, () => setOpen(false))
   if (!user)
     return (
       <Link to="/signin" className="btn btn-line btn-sm">
-        Sign in
+        {t('Sign in')}
       </Link>
     )
   return (
@@ -221,14 +240,14 @@ function PersonaMenu() {
             <div>
               <strong>{user.name}</strong>
               <div className="mono muted">
-                {ROLE_LABEL[user.role]}
+                {roleLabel(user.role)}
                 {user.company ? ` · ${user.company}` : ''}
               </div>
             </div>
           </div>
           <div className="stitch-rule" />
           <button className="menu-item" onClick={() => signOut()}>
-            <Icon name="logout" size={16} /> Sign out
+            <Icon name="logout" size={16} /> {t('Sign out')}
           </button>
         </div>
       )}

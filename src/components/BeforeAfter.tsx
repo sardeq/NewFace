@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
 import { Photo } from './ui'
+import { useT } from '../i18n'
 
 /** Drag the seam to compare before / after. Keyboard: ← → */
 export function BeforeAfter({ before, after, label }: { before?: string; after?: string; label: string }) {
+  const t = useT()
   const [pos, setPos] = useState(50)
   const ref = useRef<HTMLDivElement>(null)
   const move = (clientX: number) => {
@@ -14,6 +16,7 @@ export function BeforeAfter({ before, after, label }: { before?: string; after?:
     <div
       ref={ref}
       className="ba"
+      dir="ltr"
       style={{ ['--pos' as string]: `${pos}%` }}
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId)
@@ -21,17 +24,17 @@ export function BeforeAfter({ before, after, label }: { before?: string; after?:
       }}
       onPointerMove={(e) => e.buttons === 1 && move(e.clientX)}
     >
-      <Photo src={after} alt={`${label} — after`} className="ba-img" />
+      <Photo src={after} alt={`${label} — ${t('after')}`} className="ba-img" />
       <div className="ba-before">
-        <Photo src={before} alt={`${label} — before`} className="ba-img" />
+        <Photo src={before} alt={`${label} — ${t('before')}`} className="ba-img" />
       </div>
-      <span className="ba-tag ba-tag-l mono caps">Before</span>
-      <span className="ba-tag ba-tag-r mono caps">After</span>
+      <span className="ba-tag ba-tag-l mono caps">{t('Before')}</span>
+      <span className="ba-tag ba-tag-r mono caps">{t('After')}</span>
       <div
         className="ba-seam"
         role="slider"
         tabIndex={0}
-        aria-label="Compare before and after"
+        aria-label={t('Compare before and after')}
         aria-valuenow={Math.round(pos)}
         aria-valuemin={0}
         aria-valuemax={100}

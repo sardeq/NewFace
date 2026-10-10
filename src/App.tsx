@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router'
 import { AppShell } from './components/AppShell'
 import { Empty, Skeleton } from './components/ui'
 import Feed from './pages/Feed'
+import { useRipples } from './components/motion'
+import { useT } from './i18n'
 
 const Report = lazy(() => import('./pages/Report'))
 const IssueDetail = lazy(() => import('./pages/IssueDetail'))
@@ -15,6 +17,8 @@ const Contractor = lazy(() => import('./pages/Contractor'))
 const SignIn = lazy(() => import('./pages/SignIn'))
 
 function App() {
+  const t = useT()
+  useRipples()
   return (
     <BrowserRouter>
       <Suspense fallback={<Skeleton h={480} />}>
@@ -30,7 +34,7 @@ function App() {
             <Route path="me" element={<Profile />} />
             <Route path="admin" element={<Admin />} />
             <Route path="contractor" element={<Contractor />} />
-            <Route path="*" element={<Empty title="This page fell through a pothole" icon="alert" />} />
+            <Route path="*" element={<Empty title={t('This page fell through a pothole')} icon="alert" />} />
           </Route>
         </Routes>
       </Suspense>
